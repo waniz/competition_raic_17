@@ -12,6 +12,14 @@ from model.WeatherType import WeatherType
 from model.World import World
 
 
+class DecisionMaker:
+    def __init__(self):
+        pass
+
+    def get_state(self):
+        pass
+
+
 class MyStrategy:
     random = None
     terrain, weather = None, None
@@ -33,6 +41,9 @@ class MyStrategy:
 
         if me.remaining_action_cooldown_ticks > 0:
             return
+
+
+
 
 
 
