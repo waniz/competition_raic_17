@@ -12,6 +12,9 @@ from model.WeatherType import WeatherType
 from model.World import World
 
 
+DEBUG = True
+
+
 class DecisionMaker:
     def __init__(self):
         pass
@@ -30,8 +33,16 @@ class MyStrategy:
         self.terrain = world.terrain_by_cell_x_y
         self.weather = world.weather_by_cell_x_y
 
+        if DEBUG:
+            print('[DEBUG] ---- ACTIVE ---- ')
+
     def tick_init(self, world, game, me):
-        pass
+        """ find out all my armies and types """
+
+
+
+
+
 
     def move(self, me: Player, world: World, game: Game, move: Move):
 
@@ -42,7 +53,11 @@ class MyStrategy:
         if me.remaining_action_cooldown_ticks > 0:
             return
 
-
+        """
+            check control section
+        """
+        # move.action = ActionType.CLEAR_AND_SELECT
+        #
 
 
 
