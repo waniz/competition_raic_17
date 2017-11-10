@@ -1,13 +1,17 @@
 __v1:__
 
-    1. Select all unit types in 5 groups
-    2. Rebalance groups in corner
-        - tanks under the flights
-        - heals througg line
-        - BTR?
-    3. wait for an enemy
-    4. attack if possible
+    1. Взять в группе все 5 типов войск;
+    2. Перестроить в правильный порядок;
+        - воздух;
+        - танки;
+        - бтр и хилы;
+    3. Атаковать если противник приблизился;
 
 
+Ideas for next iterations:
 
+    1. Уплотнение строя юнитов
+    2. Формации (шар и прочее)
+    3. Вращение нужно для хила
+    4.
 

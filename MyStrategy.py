@@ -38,11 +38,7 @@ class MyStrategy:
 
     def tick_init(self, world, game, me):
         """ find out all my armies and types """
-
-
-
-
-
+        pass
 
     def move(self, me: Player, world: World, game: Game, move: Move):
 
