@@ -1,3 +1,6 @@
+from collections import deque
+import copy
+
 from model.ActionType import ActionType
 from model.Game import Game
 from model.Move import Move
@@ -15,19 +18,15 @@ from model.World import World
 DEBUG = True
 
 
-class DecisionMaker:
-    def __init__(self):
-        pass
-
-    def get_state(self):
-        pass
-
-
 class MyStrategy:
     random = None
     terrain, weather = None, None
+    STATE = None
+    regroup_orders = deque(maxlen=1000)
+    is_init_regroup = False
 
-    def game_init(self, world, game):
+    def game_init(self, world, game, move):
+        """ Init game, fill orders deque for regrouping """
         if not self.random:
             self.random = game.random_seed
         self.terrain = world.terrain_by_cell_x_y
@@ -35,25 +34,67 @@ class MyStrategy:
 
         if DEBUG:
             print('[DEBUG] ---- ACTIVE ---- ')
+            print('Active actions: %s' % game.base_action_count)
+
+        self._fill_commands_for_regroup(world, move)
 
     def tick_init(self, world, game, me):
         """ find out all my armies and types """
-        pass
+        if len(self.regroup_orders) > 0:
+            return self.regroup_orders.popleft()
 
     def move(self, me: Player, world: World, game: Game, move: Move):
+        """ main method """
 
         if world.tick_index == 0:
-            self.game_init(world=world, game=game)
-        self.tick_init(world, game, me)
+            self.game_init(world=world, game=game, move=move)
+        temp_move = self.tick_init(world, game, me)
+
+        if world.tick_index < 2000:
+            self.STATE = 'init_regroup'
+
+        if DEBUG:
+            print('[STATE] %s' % self.STATE)
+
+        if world.tick_index == 0:
+            move.action = ActionType.CLEAR_AND_SELECT
+            move.right = world.width
+            move.bottom = world.height
+        if world.tick_index == 1:
+            move.action = ActionType.MOVE
+            move.x = world.width / 2.0
+            move.y = world.height / 2.0
 
         if me.remaining_action_cooldown_ticks > 0:
             return
+        else:
+            move = temp_move
+            print(move)
 
-        """
-            check control section
-        """
-        # move.action = ActionType.CLEAR_AND_SELECT
+    def _fill_commands_for_regroup(self, world, move):
+        """ fill regroup deque """
+
+        pass
+
+        # mover = copy.deepcopy(move)
+        # mover.action = ActionType.CLEAR_AND_SELECT
+        # mover.right = world.width
+        # mover.bottom = world.height
+        # self.regroup_orders.append(mover)
         #
+        # mover = copy.deepcopy(move)
+        # mover.action = ActionType.MOVE
+        # mover.x = world.width / 2.0
+        # mover.y = world.height / 2.0
+        # self.regroup_orders.append(mover)
+
+
+
+
+
+
+
+
 
 
 
