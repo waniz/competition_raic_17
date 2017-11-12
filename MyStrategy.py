@@ -25,7 +25,7 @@ class MyStrategy:
     regroup_orders = deque(maxlen=1000)
     is_init_regroup = False
 
-    def game_init(self, world, game, move):
+    def game_init(self, world, game, move, me):
         """ Init game, fill orders deque for regrouping """
         if not self.random:
             self.random = game.random_seed
@@ -35,19 +35,26 @@ class MyStrategy:
         if DEBUG:
             print('[DEBUG] ---- ACTIVE ---- ')
             print('Active actions: %s' % game.base_action_count)
+            print('My Game ID: %s' % me.id)
+        new_vehicles = world.new_vehicles
 
-        self._fill_commands_for_regroup(world, move)
+        # get my units and formation in 2D-space
+        
+
+
 
     def tick_init(self, world, game, me):
         """ find out all my armies and types """
         if len(self.regroup_orders) > 0:
             return self.regroup_orders.popleft()
+        new_vehicles = world.vehicle_updates
+        print(len(new_vehicles))
 
     def move(self, me: Player, world: World, game: Game, move: Move):
         """ main method """
 
         if world.tick_index == 0:
-            self.game_init(world=world, game=game, move=move)
+            self.game_init(world=world, game=game, move=move, me=me)
         temp_move = self.tick_init(world, game, me)
 
         if world.tick_index < 2000:
