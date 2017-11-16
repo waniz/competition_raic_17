@@ -86,9 +86,11 @@ class MyStrategy:
         mover.x = mean_all_x
         mover.y = mean_all_y
         self.orders.append(mover)
-        self.orders.append('wait 200')
+        self.orders.append('wait 20')
 
         for _ in range(100):
+            mean_all_x += 15
+            mean_all_y += 15
             mover = copy.deepcopy(move)
             mover.action = ActionType.ROTATE
             mover.angle = 1
@@ -110,15 +112,14 @@ class MyStrategy:
             mover.right = world.width
             mover.bottom = world.height
             self.orders.append(mover)
-            self.orders.append('wait 1')
 
             mover = copy.deepcopy(move)
             mover.action = ActionType.MOVE
-            mover.x = 600
-            mover.y = 600
+            mover.x = 990
+            mover.y = 990
             mover.factor = 0.3
             self.orders.append(mover)
-            self.orders.append('wait 20')
+            self.orders.append('wait 10')
         pass
 
     def tick_init(self, world, game, me):
