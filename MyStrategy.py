@@ -15,13 +15,16 @@ from model.WeatherType import WeatherType
 from model.World import World
 
 
-DEBUG = True
+DEBUG = False
+
+""" Tuning params """
+NUCLEAR_DISTANCE = [100, 300]
 
 
 class MyStrategy:
     random = None
     terrain, weather = None, None
-    orders = deque(maxlen=1000)
+    orders = deque(maxlen=4000)
     next_wait = 0
     mean_my_x, mean_my_y = 0, 0
     enemy_vehicles = {}
