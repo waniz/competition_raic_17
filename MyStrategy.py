@@ -60,7 +60,7 @@ class MyStrategy:
         mover.y = mean_all_y
         self.orders.append(mover)
 
-        self.orders.append('wait 60')
+        self.orders.append('wait 80')
 
         mover = copy.deepcopy(move)
         mover.action = ActionType.ROTATE
@@ -89,15 +89,15 @@ class MyStrategy:
         self.orders.append('wait 20')
 
         for _ in range(100):
-            mean_all_x += 15
-            mean_all_y += 15
+            mean_all_x += 10
+            mean_all_y += 10
             mover = copy.deepcopy(move)
             mover.action = ActionType.ROTATE
             mover.angle = 1
             mover.x = mean_all_x
             mover.y = mean_all_y
             self.orders.append(mover)
-            self.orders.append('wait 60')
+            self.orders.append('wait 100')
 
             mover = copy.deepcopy(move)
             mover.action = ActionType.SCALE
@@ -105,7 +105,7 @@ class MyStrategy:
             mover.x = mean_all_x
             mover.y = mean_all_y
             self.orders.append(mover)
-            self.orders.append('wait 60')
+            self.orders.append('wait 120')
 
             mover = copy.deepcopy(move)
             mover.action = ActionType.CLEAR_AND_SELECT
@@ -117,7 +117,7 @@ class MyStrategy:
             mover.action = ActionType.MOVE
             mover.x = 990
             mover.y = 990
-            mover.factor = 0.3
+            mover.max_speed = 0.3
             self.orders.append(mover)
             self.orders.append('wait 10')
         pass
