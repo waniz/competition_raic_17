@@ -15,16 +15,17 @@ from model.WeatherType import WeatherType
 from model.World import World
 
 
-DEBUG = False
+DEBUG = True
 
 
 class MyStrategy:
     random = None
     terrain, weather = None, None
-    STATE = None
     orders = deque(maxlen=1000)
-    is_init_regroup = False
     next_wait = 0
+    mean_my_x, mean_my_y = 0, 0
+    enemy_vehicles = {}
+    my_vehicles = {}
 
     def game_init(self, world, game, move, me):
         """ Init game, fill orders deque for regrouping """
@@ -37,15 +38,20 @@ class MyStrategy:
             print('[DEBUG] ---- ACTIVE ---- ')
             print('Active actions: %s' % game.base_action_count)
             print('My Game ID: %s' % me.id)
-        new_vehicles = world.new_vehicles
 
-        # get my units and formation in 2D-space
-        my_vehicles = [x for x in new_vehicles if x.player_id == me.id]
-        mean_all_x = sum([my_vehicle.x for my_vehicle in my_vehicles]) / len(my_vehicles)
-        mean_all_y = sum([my_vehicle.x for my_vehicle in my_vehicles]) / len(my_vehicles)
+        for vehicle in world.new_vehicles:
+            if vehicle.player_id == me.id:
+                self.my_vehicles[vehicle.id] = vehicle
+            else:
+                self.enemy_vehicles[vehicle.id] = vehicle
+
+        self.mean_my_x = sum([vehicle.x for vehicle in self.my_vehicles.values()]) / len(list(self.my_vehicles.values()))
+        self.mean_my_y = sum([vehicle.y for vehicle in self.my_vehicles.values()]) / len(list(self.my_vehicles.values()))
 
         if DEBUG:
-            print(mean_all_x, mean_all_y)
+            print(self.mean_my_x, self.mean_my_y)
+            print(len(list(self.my_vehicles.values())))
+            print(len(list(self.enemy_vehicles.values())))
 
         mover = copy.deepcopy(move)
         mover.action = ActionType.CLEAR_AND_SELECT
@@ -56,8 +62,8 @@ class MyStrategy:
         mover = copy.deepcopy(move)
         mover.action = ActionType.SCALE
         mover.factor = 1
-        mover.x = mean_all_x
-        mover.y = mean_all_y
+        mover.x = self.mean_my_x
+        mover.y = self.mean_my_y
         self.orders.append(mover)
 
         self.orders.append('wait 80')
@@ -65,8 +71,8 @@ class MyStrategy:
         mover = copy.deepcopy(move)
         mover.action = ActionType.ROTATE
         mover.angle = 1.5
-        mover.x = mean_all_x
-        mover.y = mean_all_y
+        mover.x = self.mean_my_x
+        mover.y = self.mean_my_y
         self.orders.append(mover)
 
         self.orders.append('wait 120')
@@ -74,8 +80,8 @@ class MyStrategy:
         mover = copy.deepcopy(move)
         mover.action = ActionType.ROTATE
         mover.angle = 1
-        mover.x = mean_all_x
-        mover.y = mean_all_y
+        mover.x = self.mean_my_x
+        mover.y = self.mean_my_y
         self.orders.append(mover)
 
         self.orders.append('wait 100')
@@ -83,29 +89,28 @@ class MyStrategy:
         mover = copy.deepcopy(move)
         mover.action = ActionType.SCALE
         mover.factor = 0.3
-        mover.x = mean_all_x
-        mover.y = mean_all_y
+        mover.x = self.mean_my_x
+        mover.y = self.mean_my_y
         self.orders.append(mover)
         self.orders.append('wait 20')
 
         for _ in range(100):
-            mean_all_x += 10
-            mean_all_y += 10
+
             mover = copy.deepcopy(move)
             mover.action = ActionType.ROTATE
             mover.angle = 1
-            mover.x = mean_all_x
-            mover.y = mean_all_y
+            mover.x = self.mean_my_x
+            mover.y = self.mean_my_y
             self.orders.append(mover)
-            self.orders.append('wait 100')
+            self.orders.append('wait 60')
 
             mover = copy.deepcopy(move)
             mover.action = ActionType.SCALE
             mover.factor = 0.1
-            mover.x = mean_all_x
-            mover.y = mean_all_y
+            mover.x = self.mean_my_x
+            mover.y = self.mean_my_y
             self.orders.append(mover)
-            self.orders.append('wait 120')
+            self.orders.append('wait 60')
 
             mover = copy.deepcopy(move)
             mover.action = ActionType.CLEAR_AND_SELECT
@@ -119,11 +124,24 @@ class MyStrategy:
             mover.y = 990
             mover.max_speed = 0.3
             self.orders.append(mover)
-            self.orders.append('wait 10')
+            self.orders.append('wait 25')
         pass
 
     def tick_init(self, world, game, me):
         """ find out all my armies and types """
+
+        for vehicle in world.vehicle_updates:
+            if vehicle.durability == 0:
+                if vehicle.id in self.my_vehicles.keys():
+                    del self.my_vehicles[vehicle.id]
+                else:
+                    del self.enemy_vehicles[vehicle.id]
+            else:
+                if vehicle.id in self.my_vehicles.keys():
+                    self.my_vehicles[vehicle.id] = vehicle
+                else:
+                    self.enemy_vehicles[vehicle.id] = vehicle
+
         if self.next_wait > 0:
             self.next_wait -= 1
             return None
@@ -143,13 +161,22 @@ class MyStrategy:
         move_it = self.tick_init(world, game, me)
 
         if move_it:
-            if DEBUG:
-                print('Receiver action', move_it.action)
+
             move.action = move_it.action
             move.right = move_it.right
             move.bottom = move_it.bottom
-            move.x = move_it.x
-            move.y = move_it.y
+            if move.action != 7:
+                self.mean_my_x = sum([vehicle.x for vehicle in self.my_vehicles.values()]) / len(
+                    list(self.my_vehicles.values()))
+                self.mean_my_y = sum([vehicle.y for vehicle in self.my_vehicles.values()]) / len(
+                    list(self.my_vehicles.values()))
+                if DEBUG:
+                    print(self.mean_my_x, self.mean_my_y)
+                move.x = self.mean_my_x
+                move.y = self.mean_my_y
+            else:
+                move.x = move_it.x
+                move.y = move_it.y
             move.factor = move_it.factor
             move.max_speed = move_it.max_speed
             move.angle = move_it.angle
