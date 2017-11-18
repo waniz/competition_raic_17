@@ -1,4 +1,5 @@
 import copy
+import numpy as np
 from collections import deque
 
 from model.ActionType import ActionType
@@ -15,7 +16,7 @@ from model.WeatherType import WeatherType
 from model.World import World
 
 
-DEBUG = False
+DEBUG = True
 
 """ Tuning params """
 NUCLEAR_DISTANCE = [100, 300]
@@ -27,6 +28,7 @@ class MyStrategy:
     orders = deque(maxlen=4000)
     next_wait = 0
     mean_my_x, mean_my_y = 0, 0
+    mean_enemy_x, mean_enemy_y = 0, 0
     enemy_vehicles = {}
     my_vehicles = {}
 
@@ -50,11 +52,6 @@ class MyStrategy:
 
         self.mean_my_x = sum([vehicle.x for vehicle in self.my_vehicles.values()]) / len(list(self.my_vehicles.values()))
         self.mean_my_y = sum([vehicle.y for vehicle in self.my_vehicles.values()]) / len(list(self.my_vehicles.values()))
-
-        if DEBUG:
-            print(self.mean_my_x, self.mean_my_y)
-            print(len(list(self.my_vehicles.values())))
-            print(len(list(self.enemy_vehicles.values())))
 
         mover = copy.deepcopy(move)
         mover.action = ActionType.CLEAR_AND_SELECT
@@ -123,8 +120,8 @@ class MyStrategy:
 
             mover = copy.deepcopy(move)
             mover.action = ActionType.MOVE
-            mover.x = 990
-            mover.y = 990
+            mover.x = 0
+            mover.y = 0
             mover.max_speed = 0.3
             self.orders.append(mover)
             self.orders.append('wait 25')
@@ -169,17 +166,18 @@ class MyStrategy:
             move.right = move_it.right
             move.bottom = move_it.bottom
             if move.action != 7:
-                self.mean_my_x = sum([vehicle.x for vehicle in self.my_vehicles.values()]) / len(
-                    list(self.my_vehicles.values()))
-                self.mean_my_y = sum([vehicle.y for vehicle in self.my_vehicles.values()]) / len(
-                    list(self.my_vehicles.values()))
-                if DEBUG:
-                    print(self.mean_my_x, self.mean_my_y)
+                self.mean_my_x = np.mean([vehicle.x for vehicle in self.my_vehicles.values()])
+                self.mean_my_y = np.mean([vehicle.y for vehicle in self.my_vehicles.values()])
                 move.x = self.mean_my_x
                 move.y = self.mean_my_y
             else:
-                move.x = move_it.x
-                move.y = move_it.y
+                self.mean_enemy_x = np.mean([vehicle.x for vehicle in self.enemy_vehicles.values()])
+                self.mean_enemy_y = np.mean([vehicle.y for vehicle in self.enemy_vehicles.values()])
+                if DEBUG:
+                    print('MOVING to ENEMY: ',
+                          round(self.mean_enemy_x - self.mean_my_x), round(self.mean_enemy_y - self.mean_my_y))
+                move.x = self.mean_enemy_x - self.mean_my_x
+                move.y = self.mean_enemy_y - self.mean_my_y
             move.factor = move_it.factor
             move.max_speed = move_it.max_speed
             move.angle = move_it.angle
