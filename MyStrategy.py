@@ -1,5 +1,6 @@
 import copy
 import numpy as np
+import math
 from collections import deque
 
 from model.ActionType import ActionType
@@ -16,7 +17,7 @@ from model.WeatherType import WeatherType
 from model.World import World
 
 
-DEBUG = True
+DEBUG = False
 
 """ Tuning params """
 NUCLEAR_DISTANCE = [100, 300]
@@ -56,6 +57,8 @@ class TShirtBot:
         self.my_center = []
         self.enemy_center = []
         self.my_vehicles = {}
+        self.my_initial_vehicles = {}
+        self.enemy_initial_vehicles = {}
         self.enemy_vehicles = {}
 
         self._init_variables()
@@ -72,7 +75,10 @@ class TShirtBot:
 
         if not self.whirlwind_packed:
             self.state = 'init_regroup'
-        if self.whirlwind_packed:
+        elif self._nuclear_check():
+            self.state = 'AB'
+
+        elif self.whirlwind_packed:
             self.state = 'whirlwind'
 
     def make_decision(self):
@@ -81,7 +87,7 @@ class TShirtBot:
         if self.state == 'whirlwind':
             self.state_whirlwind()
         if self.state == 'AB':
-            pass
+            self.big_boom()
         if self.state == 'ENEMY_AB':
             pass
         if self.state is None or self.state == '':
@@ -112,6 +118,11 @@ class TShirtBot:
                                         bottom=self.world.height)
             self._add_command_to_orders(action=ActionType.MOVE, max_speed=0.3, next_delay=25)
 
+    def big_boom(self):
+        self.current_order_wait = 0
+        vehicle_id = self.get_closest_to_enemy_vehicle()
+        self._add_command_to_orders(action=ActionType.TACTICAL_NUCLEAR_STRIKE, vehicle_id=-1, priority=True)
+
     def _init_variables(self):
         self.terrain = self.world.terrain_by_cell_x_y
         self.weather = self.world.weather_by_cell_x_y
@@ -121,6 +132,8 @@ class TShirtBot:
                 self.my_vehicles[vehicle.id] = vehicle
             else:
                 self.enemy_vehicles[vehicle.id] = vehicle
+        self.my_initial_vehicles = copy.deepcopy(self.my_vehicles)
+        self.enemy_initial_vehicles = copy.deepcopy(self.enemy_vehicles)
 
     def _update_vehicles(self):
         for vehicle in self.world.vehicle_updates:
@@ -136,8 +149,8 @@ class TShirtBot:
                     self.enemy_vehicles[vehicle.id] = vehicle
 
     def _add_command_to_orders(self, action, right=0., bottom=0., x=.0, y=.0,
-                               factor=1., angle=0., max_speed=1.,
-                               next_delay=0):
+                               factor=1., angle=0., max_speed=1., vehicle_id=-1,
+                               next_delay=0, priority=False):
         temp_command = copy.deepcopy(self.move)
         temp_command.action = action
         temp_command.right = right
@@ -147,8 +160,13 @@ class TShirtBot:
         temp_command.factor = factor
         temp_command.angle = angle
         temp_command.max_speed = max_speed
+        temp_command.vehicle_id = vehicle_id
 
-        self.orders.append(temp_command)
+        if not priority:
+            self.orders.append(temp_command)
+        else:
+            self.orders.appendleft(temp_command)
+
         if DEBUG:
             print('ORDER APPEND: ', action, 'order length: ', len(self.orders))
         if next_delay > 0:
@@ -168,13 +186,42 @@ class TShirtBot:
                     if (command.action == ActionType.MOVE) and (command.x == 0.0) and (command.y == 0.0):
                         self.enemy_center = [np.mean([vehicle.x for vehicle in self.enemy_vehicles.values()]),
                                              np.mean([vehicle.y for vehicle in self.enemy_vehicles.values()])]
-                        command.x, command.y = self.enemy_center[0], self.enemy_center[1]
+                        self.my_center = [np.mean([vehicle.x for vehicle in self.my_vehicles.values()]),
+                                          np.mean([vehicle.y for vehicle in self.my_vehicles.values()])]
+                        command.x = self.enemy_center[0] - self.my_center[0]
+                        command.y = self.enemy_center[1] - self.my_center[1]
                     if command.action in [ActionType.SCALE, ActionType.ROTATE] and (command.x < 1):
                         self.my_center = [np.mean([vehicle.x for vehicle in self.my_vehicles.values()]),
                                           np.mean([vehicle.y for vehicle in self.my_vehicles.values()])]
                         command.x, command.y = self.my_center[0], self.my_center[1]
+                    if command.action == ActionType.TACTICAL_NUCLEAR_STRIKE:
+                        self.enemy_center = [np.mean([vehicle.x for vehicle in self.enemy_vehicles.values()]),
+                                             np.mean([vehicle.y for vehicle in self.enemy_vehicles.values()])]
+                        command.x, command.y = self.enemy_center[0], self.enemy_center[1]
                     return command
         return None
+
+    def _nuclear_check(self):
+        if self.me.next_nuclear_strike_tick_index == -1:
+            self.enemy_center = [np.mean([vehicle.x for vehicle in self.enemy_vehicles.values()]),
+                                 np.mean([vehicle.y for vehicle in self.enemy_vehicles.values()])]
+            self.my_center = [np.mean([vehicle.x for vehicle in self.my_vehicles.values()]),
+                              np.mean([vehicle.y for vehicle in self.my_vehicles.values()])]
+            distance = (self.my_center[0] - self.enemy_center[0]) ** 2 + (self.my_center[1] - self.enemy_center[1]) ** 2
+            if (distance > 10000) and (distance < 90000):
+                return True
+        return False
+
+    def get_closest_to_enemy_vehicle(self):
+        self.enemy_center = [np.mean([vehicle.x for vehicle in self.enemy_vehicles.values()]),
+                             np.mean([vehicle.y for vehicle in self.enemy_vehicles.values()])]
+        min_distance, best_id = 100000000, -1
+        for vehicle in self.my_vehicles.values():
+            distance = (vehicle.x - self.enemy_center[0]) ** 2 + (vehicle.y - self.enemy_center[1]) ** 2
+            if distance < min_distance:
+                min_distance = distance
+                best_id = vehicle.id
+        print('BEST id ', best_id, 'VISION ', self.my_initial_vehicles[best_id].vision_range)
 
 
 class MyStrategy:
