@@ -17,10 +17,40 @@ from model.WeatherType import WeatherType
 from model.World import World
 
 
-DEBUG = False
+DEBUG = True
 
-""" Tuning params """
-NUCLEAR_DISTANCE = [100, 300]
+BOMBER_GROUP = 9
+WHIRLWIND_GROUP = 1
+
+ACTIONS = {
+    0: 'NONE',
+    1: 'CLEAR_AND_SELECT',
+    2: 'ADD_TO_SELECTION',
+    3: 'DESELECT',
+    4: 'ASSIGN',
+    5: 'DISMISS',
+    6: 'DISBAND',
+    7: 'MOVE',
+    8: 'ROTATE',
+    9: 'SCALE',
+    10: 'SETUP_VEHICLE_PRODUCTION',
+    11: 'TACTICAL_NUCLEAR_STRIKE'
+}
+
+
+class NuclearFighter:
+    """
+        Potential field nuclear bomber
+    """
+
+    def __init__(self, group_id, world, game, move, me):
+        self.world = world
+        self.game = game
+        self.move = move
+        self.me = me
+        self.group_id = group_id
+
+        self.state = ''
 
 
 class TShirtBot:
@@ -49,6 +79,9 @@ class TShirtBot:
         self.me = me
 
         self.state = ''
+        self.bomberman = None
+        self.fighters_exist = True
+        self.bomberman_alive = False
 
         self.terrain = None
         self.weather = None
@@ -72,16 +105,24 @@ class TShirtBot:
         self.me = me
 
         self._update_vehicles()
+        self.my_vehicles = copy.deepcopy(self.my_initial_vehicles)
 
-        if not self.whirlwind_packed:
+        if self.me.remaining_action_cooldown_ticks > 0:
+            self.state = 'no_action_points'
+        elif not self.bomberman_alive and self.fighters_exist:
+            self.state = 'init_bomberman'
+        elif not self.whirlwind_packed:
             self.state = 'init_regroup'
-        elif self._nuclear_check():
-            self.state = 'AB'
-
+        # elif self._nuclear_check():
+        #     self.state = 'AB'
         elif self.whirlwind_packed:
             self.state = 'whirlwind'
 
     def make_decision(self):
+        if self.state == 'no_action_points':
+            self.no_action()
+        if self.state == 'init_bomberman':
+            self.init_bomberman()
         if self.state == 'init_regroup':
             self.state_regroup()
         if self.state == 'whirlwind':
@@ -94,34 +135,65 @@ class TShirtBot:
             pass
         return self._execute_command_in_order()
 
+    def init_bomberman(self):
+        self._add_command_to_orders(action=ActionType.CLEAR_AND_SELECT, right=self.world.width,
+                                    bottom=self.world.height, vehicle_type=VehicleType.FIGHTER)
+        self._add_command_to_orders(action=ActionType.ASSIGN, group=BOMBER_GROUP)
+
+        fluges = {}
+        for vehicle in self.my_initial_vehicles.values():
+            if vehicle.type == VehicleType.FIGHTER:
+                fluges[vehicle.id] = vehicle
+        my_center_fluges = [np.mean([vehicle.x for vehicle in self.my_vehicles.values()]),
+                            np.mean([vehicle.y for vehicle in self.my_vehicles.values()])]
+        self._add_command_to_orders(action=ActionType.MOVE, x=(self.world.width / 4) - float(my_center_fluges[0]),
+                                    y=self.world.height / 4 - float(my_center_fluges[1]), next_delay=100)
+        self._add_command_to_orders(action=ActionType.SCALE, factor=2, next_delay=20,
+                                    x=float(my_center_fluges[0]), y=float(my_center_fluges[1]))
+
+        self.bomberman_alive = True
+
     def state_regroup(self):
         self.my_center = [np.mean([vehicle.x for vehicle in self.my_vehicles.values()]),
                           np.mean([vehicle.y for vehicle in self.my_vehicles.values()])]
 
         self._add_command_to_orders(action=ActionType.CLEAR_AND_SELECT, right=self.world.width,
                                     bottom=self.world.height)
+        self._add_command_to_orders(action=ActionType.DESELECT, group=BOMBER_GROUP)
+        self._add_command_to_orders(action=ActionType.ASSIGN, group=WHIRLWIND_GROUP)
         self._add_command_to_orders(action=ActionType.SCALE, x=float(self.my_center[0]), y=float(self.my_center[1]),
-                                    factor=0.9, next_delay=80)
+                                    factor=0.1, next_delay=120)
         self._add_command_to_orders(action=ActionType.ROTATE, x=float(self.my_center[0]), y=float(self.my_center[1]),
                                     angle=1.5, next_delay=120)
         self._add_command_to_orders(action=ActionType.ROTATE, x=float(self.my_center[0]), y=float(self.my_center[1]),
                                     angle=1, next_delay=100)
         self._add_command_to_orders(action=ActionType.SCALE, x=float(self.my_center[0]), y=float(self.my_center[1]),
-                                    factor=0.3, next_delay=20)
+                                    factor=0.1, next_delay=40)
         self.whirlwind_packed = True
 
     def state_whirlwind(self):
         if len(self.orders) == 0:
+            self._add_command_to_orders(action=ActionType.CLEAR_AND_SELECT, group=WHIRLWIND_GROUP)
             self._add_command_to_orders(action=ActionType.ROTATE, angle=1, next_delay=60)
             self._add_command_to_orders(action=ActionType.SCALE, factor=0.1, next_delay=60)
-            self._add_command_to_orders(action=ActionType.CLEAR_AND_SELECT, right=self.world.width,
-                                        bottom=self.world.height)
-            self._add_command_to_orders(action=ActionType.MOVE, max_speed=0.3, next_delay=25)
+            self._add_command_to_orders(action=ActionType.MOVE, max_speed=0.3, next_delay=40)
 
     def big_boom(self):
         self.current_order_wait = 0
-        vehicle_id = self.get_closest_to_enemy_vehicle()
-        self._add_command_to_orders(action=ActionType.TACTICAL_NUCLEAR_STRIKE, vehicle_id=-1, priority=True)
+        # self._add_command_to_orders(action=ActionType.TACTICAL_NUCLEAR_STRIKE, x=self.nuclear_x, y=self.nuclear_y,
+        #                             vehicle_id=self.vehicle_id_nuclear, priority=True)
+        self._add_command_to_orders(action=ActionType.TACTICAL_NUCLEAR_STRIKE,
+                                    x=self.nuclear_x,
+                                    y=self.nuclear_y,
+                                    vehicle_id=self.vehicle_id_nuclear, priority=True)
+        # print(list(self.my_vehicles.keys())[0])
+        # self._add_command_to_orders(action=ActionType.TACTICAL_NUCLEAR_STRIKE,
+        #                             x=self.my_vehicles[list(self.my_vehicles.keys())[0]].x + 20,
+        #                             y=self.my_vehicles[list(self.my_vehicles.keys())[0]].y + 20,
+        #                             vehicle_id=list(self.my_vehicles.keys())[0], priority=True)
+
+    def no_action(self):
+        self.move.action = None
 
     def _init_variables(self):
         self.terrain = self.world.terrain_by_cell_x_y
@@ -148,31 +220,37 @@ class TShirtBot:
                 else:
                     self.enemy_vehicles[vehicle.id] = vehicle
 
-    def _add_command_to_orders(self, action, right=0., bottom=0., x=.0, y=.0,
-                               factor=1., angle=0., max_speed=1., vehicle_id=-1,
+    def _add_command_to_orders(self, action, right=.0, bottom=.0, left=.0, top=.0, x=.0, y=.0,
+                               factor=.0, angle=.0, max_speed=.0, vehicle_id=-1, group=0, vehicle_type=None,
                                next_delay=0, priority=False):
         temp_command = copy.deepcopy(self.move)
         temp_command.action = action
         temp_command.right = right
+        temp_command.left = left
         temp_command.bottom = bottom
+        temp_command.top = top
         temp_command.x = x
         temp_command.y = y
         temp_command.factor = factor
         temp_command.angle = angle
         temp_command.max_speed = max_speed
         temp_command.vehicle_id = vehicle_id
+        temp_command.group = group
+        if vehicle_type:
+            temp_command.vehicle_type = vehicle_type
 
         if not priority:
             self.orders.append(temp_command)
         else:
             self.orders.appendleft(temp_command)
 
-        if DEBUG:
-            print('ORDER APPEND: ', action, 'order length: ', len(self.orders))
         if next_delay > 0:
             self.orders.append('wait %s' % next_delay)
 
     def _execute_command_in_order(self):
+        if self.me.remaining_action_cooldown_ticks > 0:
+            self.move.action = None
+            return self.move.action
         if self.current_order_wait > 0:
             self.current_order_wait -= 1
             return None
@@ -194,38 +272,46 @@ class TShirtBot:
                         self.my_center = [np.mean([vehicle.x for vehicle in self.my_vehicles.values()]),
                                           np.mean([vehicle.y for vehicle in self.my_vehicles.values()])]
                         command.x, command.y = self.my_center[0], self.my_center[1]
-                    if command.action == ActionType.TACTICAL_NUCLEAR_STRIKE:
-                        self.enemy_center = [np.mean([vehicle.x for vehicle in self.enemy_vehicles.values()]),
-                                             np.mean([vehicle.y for vehicle in self.enemy_vehicles.values()])]
-                        command.x, command.y = self.enemy_center[0], self.enemy_center[1]
                     return command
         return None
 
     def _nuclear_check(self):
-        if self.me.next_nuclear_strike_tick_index == -1:
+        if self.me.remaining_nuclear_strike_cooldown_ticks == 0:
             self.enemy_center = [np.mean([vehicle.x for vehicle in self.enemy_vehicles.values()]),
                                  np.mean([vehicle.y for vehicle in self.enemy_vehicles.values()])]
             self.my_center = [np.mean([vehicle.x for vehicle in self.my_vehicles.values()]),
                               np.mean([vehicle.y for vehicle in self.my_vehicles.values()])]
-            distance = (self.my_center[0] - self.enemy_center[0]) ** 2 + (self.my_center[1] - self.enemy_center[1]) ** 2
-            if (distance > 10000) and (distance < 90000):
+            # distance = math.sqrt((self.my_center[0] - self.enemy_center[0]) ** 2 + (
+            #     self.my_center[1] - self.enemy_center[1]) ** 2)
+            vehicle_id, vision, min_distance, min_enemy_dist, min_enemy_id = self._get_closest_to_enemy_vehicle()
+            if min_enemy_dist <= 100:
+                self.nuclear_x = self.enemy_vehicles[min_enemy_id].x
+                self.nuclear_y = self.enemy_vehicles[min_enemy_id].y
+
+                self.vehicle_id_nuclear = vehicle_id
                 return True
         return False
 
-    def get_closest_to_enemy_vehicle(self):
-        self.enemy_center = [np.mean([vehicle.x for vehicle in self.enemy_vehicles.values()]),
-                             np.mean([vehicle.y for vehicle in self.enemy_vehicles.values()])]
+    def _get_closest_to_enemy_vehicle(self):
         min_distance, best_id = 100000000, -1
         for vehicle in self.my_vehicles.values():
             distance = (vehicle.x - self.enemy_center[0]) ** 2 + (vehicle.y - self.enemy_center[1]) ** 2
             if distance < min_distance:
                 min_distance = distance
                 best_id = vehicle.id
-        print('BEST id ', best_id, 'VISION ', self.my_initial_vehicles[best_id].vision_range)
+        min_enemy_dist, min_enemy_id = 100000000, 1
+        for enemy in self.enemy_vehicles.values():
+            min_enemy = (enemy.x - self.my_vehicles[best_id].x) ** 2 + (enemy.y - self.my_vehicles[best_id].y) ** 2
+            if min_enemy < min_enemy_dist:
+                min_enemy_dist = min_enemy
+                min_enemy_id = enemy.id
+        return best_id, self.my_initial_vehicles[best_id].vision_range, math.sqrt(min_distance), \
+               math.sqrt(min_enemy_dist), min_enemy_id
 
 
 class MyStrategy:
     my_bot = None
+    commands_executed = 0
 
     def game_init(self, world, game, move, me):
         self.my_bot = TShirtBot(world, game, move, me)
@@ -237,19 +323,24 @@ class MyStrategy:
         self.my_bot.init_tick(world, game, move, me)
         bot_answer = self.my_bot.make_decision()
 
-        if DEBUG:
-            if bot_answer:
-                print('ACTION', bot_answer.action, bot_answer.x, bot_answer.y, bot_answer.right, bot_answer.bottom)
-
         if bot_answer:
+            self.commands_executed += 1
+            if DEBUG:
+                print('[EXECUTE: T%s: EXE:%s STATE:%s] %s' % (world.tick_index, self.commands_executed,
+                                                              self.my_bot.state, ACTIONS[bot_answer.action]))
             move.action = bot_answer.action
             move.right = bot_answer.right
             move.bottom = bot_answer.bottom
+            move.left = bot_answer.left
+            move.top = bot_answer.top
             move.x = bot_answer.x
             move.y = bot_answer.y
             move.factor = bot_answer.factor
             move.max_speed = bot_answer.max_speed
             move.angle = bot_answer.angle
+            move.vehicle_id = bot_answer.vehicle_id
+            move.group = bot_answer.group
+            move.vehicle_type = bot_answer.vehicle_type
         else:
             move.action = None
 
