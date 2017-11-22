@@ -114,30 +114,26 @@ class TShirtBot:
         self._update_vehicles()
         self.my_vehicles = copy.deepcopy(self.my_initial_vehicles)
 
+        self.state = ''
+
         if self.me.remaining_action_cooldown_ticks > 0:
             self.state = 'no_action_points'
-        # elif not self.bomberman_alive and self.fighters_exist:
-        #     self.state = 'init_bomberman'
-        elif not self.whirlwind_packed:
+        if not self.whirlwind_packed:
             self.state = 'init_regroup'
         # elif self._nuclear_check():
         #     self.state = 'AB'
-        elif self.whirlwind_packed:
-            self.state = 'whirlwind'
+        # elif self.whirlwind_packed:
+        #     self.state = 'whirlwind'
 
     def make_decision(self):
         if self.state == 'no_action_points':
             self.no_action()
-        if self.state == 'init_bomberman':
-            self.init_bomberman()
         if self.state == 'init_regroup':
             self.state_regroup()
-        if self.state == 'whirlwind':
-            self.state_whirlwind()
-        if self.state == 'AB':
-            self.big_boom()
-        if self.state == 'ENEMY_AB':
-            pass
+        # if self.state == 'whirlwind':
+        #     self.state_whirlwind()
+        # if self.state == 'AB':
+        #     self.big_boom()
         if self.state is None or self.state == '':
             pass
         return self._execute_command_in_order()
@@ -180,6 +176,7 @@ class TShirtBot:
 
     def state_regroup(self):
         self.whirlwind_packed = True
+
         """ 10 actions """
         self._add_command_to_orders(action=ActionType.CLEAR_AND_SELECT, right=self.world.width,
                                     bottom=self.world.height, vehicle_type=VehicleType.FIGHTER)
@@ -196,6 +193,7 @@ class TShirtBot:
         self._add_command_to_orders(action=ActionType.CLEAR_AND_SELECT, right=self.world.width,
                                     bottom=self.world.height, vehicle_type=VehicleType.TANK)
         self._add_command_to_orders(action=ActionType.ASSIGN, group=TANK_GROUP)
+
         """ get centers """
         for vehicle in self.my_vehicles.values():
             if vehicle.type == VehicleType.FIGHTER:
@@ -248,223 +246,595 @@ class TShirtBot:
                 pos_units_ground['arrv'] = pos
         if DEBUG:
             print(pos_unit)
+
+        """ fly units regroup """
+        if pos_unit['fighter'] in [4, 5, 6] and pos_unit['helicopters'] in [4, 5, 6]:
+            pass
+
+        if pos_unit['fighter'] not in [4, 5, 6] and pos_unit['helicopters'] in [4, 5, 6]:
+            if DEBUG:
+                print('FLY: pos_unit[fighter] not in [4, 5, 6] and pos_unit[helicopters] in [4, 5, 6]')
+            if pos_unit['helicopters'] == 4:
+                if DEBUG:
+                    print('heli 4')
+                if pos_unit['fighter'] in [2, 3]:
+                    self._add_command_to_orders(action=ActionType.CLEAR_AND_SELECT, right=self.world.width,
+                                                bottom=self.world.height, group=FIGHTER_GROUP)
+                    self._add_command_to_orders(action=ActionType.MOVE, x=0, y=74)
+                if pos_unit['fighter'] in [8, 9]:
+                    self._add_command_to_orders(action=ActionType.CLEAR_AND_SELECT, right=self.world.width,
+                                                bottom=self.world.height, group=FIGHTER_GROUP)
+                    self._add_command_to_orders(action=ActionType.MOVE, x=0, y=-74)
+                if pos_unit['fighter'] in [1]:
+                    self._add_command_to_orders(action=ActionType.CLEAR_AND_SELECT, right=self.world.width,
+                                                bottom=self.world.height, group=FIGHTER_GROUP)
+                    self._add_command_to_orders(action=ActionType.MOVE, x=74, y=0, next_delay=62)
+                    self._add_command_to_orders(action=ActionType.MOVE, x=0, y=74)
+                if pos_unit['fighter'] in [7]:
+                    self._add_command_to_orders(action=ActionType.CLEAR_AND_SELECT, right=self.world.width,
+                                                bottom=self.world.height, group=FIGHTER_GROUP)
+                    self._add_command_to_orders(action=ActionType.MOVE, x=74, y=0, next_delay=62)
+                    self._add_command_to_orders(action=ActionType.MOVE, x=0, y=-74)
+            elif pos_unit['helicopters'] == 5:
+                if DEBUG:
+                    print('heli 5')
+                if pos_unit['fighter'] in [1, 3]:
+                    self._add_command_to_orders(action=ActionType.CLEAR_AND_SELECT, right=self.world.width,
+                                                bottom=self.world.height, group=FIGHTER_GROUP)
+                    self._add_command_to_orders(action=ActionType.MOVE, x=0, y=74)
+                if pos_unit['fighter'] in [7, 9]:
+                    self._add_command_to_orders(action=ActionType.CLEAR_AND_SELECT, right=self.world.width,
+                                                bottom=self.world.height, group=FIGHTER_GROUP)
+                    self._add_command_to_orders(action=ActionType.MOVE, x=0, y=-74)
+                if pos_unit['fighter'] in [2]:
+                    self._add_command_to_orders(action=ActionType.CLEAR_AND_SELECT, right=self.world.width,
+                                                bottom=self.world.height, group=FIGHTER_GROUP)
+                    self._add_command_to_orders(action=ActionType.MOVE, x=74, y=0, next_delay=62)
+                    self._add_command_to_orders(action=ActionType.MOVE, x=0, y=74)
+                if pos_unit['fighter'] in [8]:
+                    self._add_command_to_orders(action=ActionType.CLEAR_AND_SELECT, right=self.world.width,
+                                                bottom=self.world.height, group=FIGHTER_GROUP)
+                    self._add_command_to_orders(action=ActionType.MOVE, x=74, y=0, next_delay=62)
+                    self._add_command_to_orders(action=ActionType.MOVE, x=0, y=-74)
+            elif pos_unit['helicopters'] == 6:
+                if DEBUG:
+                    print('heli 6')
+                if pos_unit['fighter'] in [1, 2]:
+                    self._add_command_to_orders(action=ActionType.CLEAR_AND_SELECT, right=self.world.width,
+                                                bottom=self.world.height, group=FIGHTER_GROUP)
+                    self._add_command_to_orders(action=ActionType.MOVE, x=0, y=74)
+                if pos_unit['fighter'] in [7, 8]:
+                    self._add_command_to_orders(action=ActionType.CLEAR_AND_SELECT, right=self.world.width,
+                                                bottom=self.world.height, group=FIGHTER_GROUP)
+                    self._add_command_to_orders(action=ActionType.MOVE, x=0, y=-74)
+                if pos_unit['fighter'] in [3]:
+                    self._add_command_to_orders(action=ActionType.CLEAR_AND_SELECT, right=self.world.width,
+                                                bottom=self.world.height, group=FIGHTER_GROUP)
+                    self._add_command_to_orders(action=ActionType.MOVE, x=-74, y=0, next_delay=62)
+                    self._add_command_to_orders(action=ActionType.MOVE, x=0, y=74)
+                if pos_unit['fighter'] in [9]:
+                    self._add_command_to_orders(action=ActionType.CLEAR_AND_SELECT, right=self.world.width,
+                                                bottom=self.world.height, group=FIGHTER_GROUP)
+                    self._add_command_to_orders(action=ActionType.MOVE, x=-74, y=0, next_delay=62)
+                    self._add_command_to_orders(action=ActionType.MOVE, x=0, y=-74)
+        if pos_unit['fighter']in [4, 5, 6] and pos_unit['helicopters'] not in [4, 5, 6]:
+            if DEBUG:
+                print('FLY: pos_unit[fighter] in [4, 5, 6] and pos_unit[helicopters] not in [4, 5, 6]')
+            if pos_unit['fighter'] == 4:
+                if DEBUG:
+                    print('fighter 4')
+                if pos_unit['helicopters'] in [2, 3]:
+                    self._add_command_to_orders(action=ActionType.CLEAR_AND_SELECT, right=self.world.width,
+                                                bottom=self.world.height, group=HELICOPTER_GROUP)
+                    self._add_command_to_orders(action=ActionType.MOVE, x=0, y=74)
+                if pos_unit['helicopters'] in [8, 9]:
+                    self._add_command_to_orders(action=ActionType.CLEAR_AND_SELECT, right=self.world.width,
+                                                bottom=self.world.height, group=HELICOPTER_GROUP)
+                    self._add_command_to_orders(action=ActionType.MOVE, x=0, y=-74)
+                if pos_unit['helicopters'] in [1]:
+                    self._add_command_to_orders(action=ActionType.CLEAR_AND_SELECT, right=self.world.width,
+                                                bottom=self.world.height, group=HELICOPTER_GROUP)
+                    self._add_command_to_orders(action=ActionType.MOVE, x=74, y=0, next_delay=100)
+                    self._add_command_to_orders(action=ActionType.MOVE, x=0, y=74)
+                if pos_unit['helicopters'] in [7]:
+                    self._add_command_to_orders(action=ActionType.CLEAR_AND_SELECT, right=self.world.width,
+                                                bottom=self.world.height, group=HELICOPTER_GROUP)
+                    self._add_command_to_orders(action=ActionType.MOVE, x=74, y=0, next_delay=100)
+                    self._add_command_to_orders(action=ActionType.MOVE, x=0, y=-74)
+            elif pos_unit['fighter'] == 5:
+                if DEBUG:
+                    print('fighter 5')
+                if pos_unit['helicopters'] in [1, 3]:
+                    self._add_command_to_orders(action=ActionType.CLEAR_AND_SELECT, right=self.world.width,
+                                                bottom=self.world.height, group=HELICOPTER_GROUP)
+                    self._add_command_to_orders(action=ActionType.MOVE, x=0, y=74)
+                if pos_unit['helicopters'] in [7, 9]:
+                    self._add_command_to_orders(action=ActionType.CLEAR_AND_SELECT, right=self.world.width,
+                                                bottom=self.world.height, group=HELICOPTER_GROUP)
+                    self._add_command_to_orders(action=ActionType.MOVE, x=0, y=-74)
+                if pos_unit['helicopters'] in [2]:
+                    self._add_command_to_orders(action=ActionType.CLEAR_AND_SELECT, right=self.world.width,
+                                                bottom=self.world.height, group=HELICOPTER_GROUP)
+                    self._add_command_to_orders(action=ActionType.MOVE, x=74, y=0, next_delay=100)
+                    self._add_command_to_orders(action=ActionType.MOVE, x=0, y=74)
+                if pos_unit['helicopters'] in [8]:
+                    self._add_command_to_orders(action=ActionType.CLEAR_AND_SELECT, right=self.world.width,
+                                                bottom=self.world.height, group=HELICOPTER_GROUP)
+                    self._add_command_to_orders(action=ActionType.MOVE, x=74, y=0, next_delay=100)
+                    self._add_command_to_orders(action=ActionType.MOVE, x=0, y=-74)
+            elif pos_unit['fighter'] == 6:
+                if DEBUG:
+                    print('fighter 6')
+                if pos_unit['helicopters'] in [1, 2]:
+                    self._add_command_to_orders(action=ActionType.CLEAR_AND_SELECT, right=self.world.width,
+                                                bottom=self.world.height, group=HELICOPTER_GROUP)
+                    self._add_command_to_orders(action=ActionType.MOVE, x=0, y=74)
+                if pos_unit['helicopters'] in [7, 8]:
+                    self._add_command_to_orders(action=ActionType.CLEAR_AND_SELECT, right=self.world.width,
+                                                bottom=self.world.height, group=HELICOPTER_GROUP)
+                    self._add_command_to_orders(action=ActionType.MOVE, x=0, y=-74)
+                if pos_unit['helicopters'] in [3]:
+                    self._add_command_to_orders(action=ActionType.CLEAR_AND_SELECT, right=self.world.width,
+                                                bottom=self.world.height, group=HELICOPTER_GROUP)
+                    self._add_command_to_orders(action=ActionType.MOVE, x=-74, y=0, next_delay=100)
+                    self._add_command_to_orders(action=ActionType.MOVE, x=0, y=74)
+                if pos_unit['helicopters'] in [9]:
+                    self._add_command_to_orders(action=ActionType.CLEAR_AND_SELECT, right=self.world.width,
+                                                bottom=self.world.height, group=HELICOPTER_GROUP)
+                    self._add_command_to_orders(action=ActionType.MOVE, x=-74, y=0, next_delay=100)
+                    self._add_command_to_orders(action=ActionType.MOVE, x=0, y=-74)
+
+        if pos_unit['fighter'] not in [4, 5, 6] and pos_unit['helicopters'] not in [4, 5, 6]:
+            if DEBUG:
+                print('FLY: pos_unit[fighter] not in [4, 5, 6] and pos_unit[helicopters] not in [4, 5, 6]')
+            if pos_unit['fighter'] in [1, 2, 3] and pos_unit['helicopters'] in [1, 2, 3]:
+                self._add_command_to_orders(action=ActionType.CLEAR_AND_SELECT, right=self.world.width,
+                                            bottom=self.world.height, group=HELICOPTER_GROUP)
+                self._add_command_to_orders(action=ActionType.MOVE, x=0, y=74)
+                self._add_command_to_orders(action=ActionType.CLEAR_AND_SELECT, right=self.world.width,
+                                            bottom=self.world.height, group=FIGHTER_GROUP)
+                self._add_command_to_orders(action=ActionType.MOVE, x=0, y=74)
+            elif pos_unit['fighter'] in [7, 8, 9] and pos_unit['helicopters'] in [7, 8, 9]:
+                self._add_command_to_orders(action=ActionType.CLEAR_AND_SELECT, right=self.world.width,
+                                            bottom=self.world.height, group=HELICOPTER_GROUP)
+                self._add_command_to_orders(action=ActionType.MOVE, x=0, y=-74)
+                self._add_command_to_orders(action=ActionType.CLEAR_AND_SELECT, right=self.world.width,
+                                            bottom=self.world.height, group=FIGHTER_GROUP)
+                self._add_command_to_orders(action=ActionType.MOVE, x=0, y=-74)
+            elif pos_unit['fighter'] == 1 and pos_unit['helicopters'] == 7:
+                self._add_command_to_orders(action=ActionType.CLEAR_AND_SELECT, right=self.world.width,
+                                            bottom=self.world.height, group=HELICOPTER_GROUP)
+                self._add_command_to_orders(action=ActionType.MOVE, x=0, y=-74)
+                self._add_command_to_orders(action=ActionType.CLEAR_AND_SELECT, right=self.world.width,
+                                            bottom=self.world.height, group=FIGHTER_GROUP)
+                self._add_command_to_orders(action=ActionType.MOVE, x=74, y=0, next_delay=90)
+                self._add_command_to_orders(action=ActionType.MOVE, x=0, y=74)
+            elif pos_unit['fighter'] == 1 and pos_unit['helicopters'] in [8, 9]:
+                self._add_command_to_orders(action=ActionType.CLEAR_AND_SELECT, right=self.world.width,
+                                            bottom=self.world.height, group=HELICOPTER_GROUP)
+                self._add_command_to_orders(action=ActionType.MOVE, x=0, y=-74)
+                self._add_command_to_orders(action=ActionType.CLEAR_AND_SELECT, right=self.world.width,
+                                            bottom=self.world.height, group=FIGHTER_GROUP)
+                self._add_command_to_orders(action=ActionType.MOVE, x=0, y=74)
+            elif pos_unit['fighter'] == 2 and pos_unit['helicopters'] in [7, 9]:
+                self._add_command_to_orders(action=ActionType.CLEAR_AND_SELECT, right=self.world.width,
+                                            bottom=self.world.height, group=HELICOPTER_GROUP)
+                self._add_command_to_orders(action=ActionType.MOVE, x=0, y=-74)
+                self._add_command_to_orders(action=ActionType.CLEAR_AND_SELECT, right=self.world.width,
+                                            bottom=self.world.height, group=FIGHTER_GROUP)
+                self._add_command_to_orders(action=ActionType.MOVE, x=0, y=74)
+            elif pos_unit['fighter'] == 3 and pos_unit['helicopters'] in [7, 8]:
+                self._add_command_to_orders(action=ActionType.CLEAR_AND_SELECT, right=self.world.width,
+                                            bottom=self.world.height, group=HELICOPTER_GROUP)
+                self._add_command_to_orders(action=ActionType.MOVE, x=0, y=-74)
+                self._add_command_to_orders(action=ActionType.CLEAR_AND_SELECT, right=self.world.width,
+                                            bottom=self.world.height, group=FIGHTER_GROUP)
+                self._add_command_to_orders(action=ActionType.MOVE, x=0, y=74)
+            elif pos_unit['fighter'] == 2 and pos_unit['helicopters'] == 8:
+                self._add_command_to_orders(action=ActionType.CLEAR_AND_SELECT, right=self.world.width,
+                                            bottom=self.world.height, group=HELICOPTER_GROUP)
+                self._add_command_to_orders(action=ActionType.MOVE, x=0, y=-74)
+                self._add_command_to_orders(action=ActionType.CLEAR_AND_SELECT, right=self.world.width,
+                                            bottom=self.world.height, group=FIGHTER_GROUP)
+                self._add_command_to_orders(action=ActionType.MOVE, x=74, y=0, next_delay=90)
+                self._add_command_to_orders(action=ActionType.MOVE, x=0, y=74)
+            elif pos_unit['fighter'] == 3 and pos_unit['helicopters'] == 9:
+                self._add_command_to_orders(action=ActionType.CLEAR_AND_SELECT, right=self.world.width,
+                                            bottom=self.world.height, group=HELICOPTER_GROUP)
+                self._add_command_to_orders(action=ActionType.MOVE, x=0, y=-74)
+                self._add_command_to_orders(action=ActionType.CLEAR_AND_SELECT, right=self.world.width,
+                                            bottom=self.world.height, group=FIGHTER_GROUP)
+                self._add_command_to_orders(action=ActionType.MOVE, x=-74, y=0, next_delay=90)
+                self._add_command_to_orders(action=ActionType.MOVE, x=0, y=74)
+
+            elif pos_unit['helicopters'] == 1 and pos_unit['fighter'] == 7:
+                self._add_command_to_orders(action=ActionType.CLEAR_AND_SELECT, right=self.world.width,
+                                            bottom=self.world.height, group=HELICOPTER_GROUP)
+                self._add_command_to_orders(action=ActionType.MOVE, x=0, y=74)
+                self._add_command_to_orders(action=ActionType.CLEAR_AND_SELECT, right=self.world.width,
+                                            bottom=self.world.height, group=FIGHTER_GROUP)
+                self._add_command_to_orders(action=ActionType.MOVE, x=74, y=0, next_delay=90)
+                self._add_command_to_orders(action=ActionType.MOVE, x=0, y=-74)
+            elif pos_unit['helicopters'] == 1 and pos_unit['fighter'] in [8, 9]:
+                self._add_command_to_orders(action=ActionType.CLEAR_AND_SELECT, right=self.world.width,
+                                            bottom=self.world.height, group=HELICOPTER_GROUP)
+                self._add_command_to_orders(action=ActionType.MOVE, x=0, y=74)
+                self._add_command_to_orders(action=ActionType.CLEAR_AND_SELECT, right=self.world.width,
+                                            bottom=self.world.height, group=FIGHTER_GROUP)
+                self._add_command_to_orders(action=ActionType.MOVE, x=0, y=-74)
+            elif pos_unit['helicopters'] == 2 and pos_unit['fighter'] in [7, 9]:
+                self._add_command_to_orders(action=ActionType.CLEAR_AND_SELECT, right=self.world.width,
+                                            bottom=self.world.height, group=HELICOPTER_GROUP)
+                self._add_command_to_orders(action=ActionType.MOVE, x=0, y=74)
+                self._add_command_to_orders(action=ActionType.CLEAR_AND_SELECT, right=self.world.width,
+                                            bottom=self.world.height, group=FIGHTER_GROUP)
+                self._add_command_to_orders(action=ActionType.MOVE, x=0, y=-74)
+            elif pos_unit['helicopters'] == 3 and pos_unit['fighter'] in [7, 8]:
+                self._add_command_to_orders(action=ActionType.CLEAR_AND_SELECT, right=self.world.width,
+                                            bottom=self.world.height, group=HELICOPTER_GROUP)
+                self._add_command_to_orders(action=ActionType.MOVE, x=0, y=74)
+                self._add_command_to_orders(action=ActionType.CLEAR_AND_SELECT, right=self.world.width,
+                                            bottom=self.world.height, group=FIGHTER_GROUP)
+                self._add_command_to_orders(action=ActionType.MOVE, x=0, y=-74)
+            elif pos_unit['helicopters'] == 2 and pos_unit['fighter'] == 8:
+                self._add_command_to_orders(action=ActionType.CLEAR_AND_SELECT, right=self.world.width,
+                                            bottom=self.world.height, group=HELICOPTER_GROUP)
+                self._add_command_to_orders(action=ActionType.MOVE, x=0, y=74)
+                self._add_command_to_orders(action=ActionType.CLEAR_AND_SELECT, right=self.world.width,
+                                            bottom=self.world.height, group=FIGHTER_GROUP)
+                self._add_command_to_orders(action=ActionType.MOVE, x=74, y=0, next_delay=90)
+                self._add_command_to_orders(action=ActionType.MOVE, x=0, y=-74)
+            elif pos_unit['helicopters'] == 3 and pos_unit['fighter'] == 9:
+                self._add_command_to_orders(action=ActionType.CLEAR_AND_SELECT, right=self.world.width,
+                                            bottom=self.world.height, group=HELICOPTER_GROUP)
+                self._add_command_to_orders(action=ActionType.MOVE, x=0, y=74)
+                self._add_command_to_orders(action=ActionType.CLEAR_AND_SELECT, right=self.world.width,
+                                            bottom=self.world.height, group=FIGHTER_GROUP)
+                self._add_command_to_orders(action=ActionType.MOVE, x=-74, y=0, next_delay=90)
+                self._add_command_to_orders(action=ActionType.MOVE, x=0, y=-74)
+
         """ calculate ground movements """
         if (pos_unit['tank'] in [4, 5, 6]) and (pos_unit['ifv'] in [4, 5, 6]) and (pos_unit['arrv'] in [4, 5, 6]):
+            if DEBUG:
+                print('3 in middle')
             pass
 
         # ifv location (if 2 in middle)
-        self._add_command_to_orders(action=ActionType.CLEAR_AND_SELECT, right=self.world.width,
-                                    bottom=self.world.height, group=IFV_GROUP)
         if (pos_unit['ifv'] not in [4, 5, 6]) and (pos_unit['arrv'] in [4, 5, 6]) and (pos_unit['tank'] in [4, 5, 6]):
             ifv_pos = [4, 5, 6]
             ifv_pos.remove(pos_unit['arrv'])
             ifv_pos.remove(pos_unit['tank'])
+            if DEBUG:
+                print('2 in of middle / IFV', ifv_pos)
             if ifv_pos[0] == 4 and pos_unit['ifv'] == 1:
-                self._add_command_to_orders(action=ActionType.MOVE, x=0, y=74, next_delay=185)
+                self._add_command_to_orders(action=ActionType.CLEAR_AND_SELECT, right=self.world.width,
+                                            bottom=self.world.height, group=IFV_GROUP)
+                self._add_command_to_orders(action=ActionType.MOVE, x=0, y=74, next_delay=230)
             if ifv_pos[0] == 4 and pos_unit['ifv'] == 7:
-                self._add_command_to_orders(action=ActionType.MOVE, x=0, y=-74, next_delay=185)
+                self._add_command_to_orders(action=ActionType.CLEAR_AND_SELECT, right=self.world.width,
+                                            bottom=self.world.height, group=IFV_GROUP)
+                self._add_command_to_orders(action=ActionType.MOVE, x=0, y=-74, next_delay=230)
             if ifv_pos[0] == 4 and pos_unit['ifv'] == 2:
-                self._add_command_to_orders(action=ActionType.MOVE, x=-74, y=0, next_delay=185)
-                self._add_command_to_orders(action=ActionType.MOVE, x=0, y=74, next_delay=185)
+                self._add_command_to_orders(action=ActionType.CLEAR_AND_SELECT, right=self.world.width,
+                                            bottom=self.world.height, group=IFV_GROUP)
+                self._add_command_to_orders(action=ActionType.MOVE, x=-74, y=0, next_delay=230)
+                self._add_command_to_orders(action=ActionType.MOVE, x=0, y=74, next_delay=230)
             if ifv_pos[0] == 4 and pos_unit['ifv'] == 8:
-                self._add_command_to_orders(action=ActionType.MOVE, x=-74, y=0, next_delay=185)
-                self._add_command_to_orders(action=ActionType.MOVE, x=0, y=-74, next_delay=185)
+                self._add_command_to_orders(action=ActionType.CLEAR_AND_SELECT, right=self.world.width,
+                                            bottom=self.world.height, group=IFV_GROUP)
+                self._add_command_to_orders(action=ActionType.MOVE, x=-74, y=0, next_delay=230)
+                self._add_command_to_orders(action=ActionType.MOVE, x=0, y=-74, next_delay=230)
             if ifv_pos[0] == 4 and pos_unit['ifv'] == 3:
-                self._add_command_to_orders(action=ActionType.MOVE, x=-148, y=0, next_delay=370)
-                self._add_command_to_orders(action=ActionType.MOVE, x=0, y=74, next_delay=185)
+                self._add_command_to_orders(action=ActionType.CLEAR_AND_SELECT, right=self.world.width,
+                                            bottom=self.world.height, group=IFV_GROUP)
+                self._add_command_to_orders(action=ActionType.MOVE, x=-148, y=0, next_delay=450)
+                self._add_command_to_orders(action=ActionType.MOVE, x=0, y=74, next_delay=230)
             if ifv_pos[0] == 4 and pos_unit['ifv'] == 9:
-                self._add_command_to_orders(action=ActionType.MOVE, x=-148, y=0, next_delay=370)
-                self._add_command_to_orders(action=ActionType.MOVE, x=0, y=-74, next_delay=185)
+                self._add_command_to_orders(action=ActionType.CLEAR_AND_SELECT, right=self.world.width,
+                                            bottom=self.world.height, group=IFV_GROUP)
+                self._add_command_to_orders(action=ActionType.MOVE, x=-148, y=0, next_delay=450)
+                self._add_command_to_orders(action=ActionType.MOVE, x=0, y=-74, next_delay=230)
 
             if ifv_pos[0] == 5 and pos_unit['ifv'] == 1:
-                self._add_command_to_orders(action=ActionType.MOVE, x=74, y=0, next_delay=185)
-                self._add_command_to_orders(action=ActionType.MOVE, x=0, y=74, next_delay=185)
+                self._add_command_to_orders(action=ActionType.CLEAR_AND_SELECT, right=self.world.width,
+                                            bottom=self.world.height, group=IFV_GROUP)
+                self._add_command_to_orders(action=ActionType.MOVE, x=74, y=0, next_delay=230)
+                self._add_command_to_orders(action=ActionType.MOVE, x=0, y=74, next_delay=230)
             if ifv_pos[0] == 5 and pos_unit['ifv'] == 7:
-                self._add_command_to_orders(action=ActionType.MOVE, x=74, y=0, next_delay=185)
-                self._add_command_to_orders(action=ActionType.MOVE, x=0, y=-74, next_delay=185)
+                self._add_command_to_orders(action=ActionType.CLEAR_AND_SELECT, right=self.world.width,
+                                            bottom=self.world.height, group=IFV_GROUP)
+                self._add_command_to_orders(action=ActionType.MOVE, x=74, y=0, next_delay=230)
+                self._add_command_to_orders(action=ActionType.MOVE, x=0, y=-74, next_delay=230)
             if ifv_pos[0] == 5 and pos_unit['ifv'] == 2:
-                self._add_command_to_orders(action=ActionType.MOVE, x=0, y=74, next_delay=185)
+                self._add_command_to_orders(action=ActionType.CLEAR_AND_SELECT, right=self.world.width,
+                                            bottom=self.world.height, group=IFV_GROUP)
+                self._add_command_to_orders(action=ActionType.MOVE, x=0, y=74, next_delay=230)
             if ifv_pos[0] == 5 and pos_unit['ifv'] == 8:
-                self._add_command_to_orders(action=ActionType.MOVE, x=0, y=-74, next_delay=185)
+                self._add_command_to_orders(action=ActionType.CLEAR_AND_SELECT, right=self.world.width,
+                                            bottom=self.world.height, group=IFV_GROUP)
+                self._add_command_to_orders(action=ActionType.MOVE, x=0, y=-74, next_delay=230)
             if ifv_pos[0] == 5 and pos_unit['ifv'] == 3:
-                self._add_command_to_orders(action=ActionType.MOVE, x=-74, y=0, next_delay=185)
-                self._add_command_to_orders(action=ActionType.MOVE, x=0, y=74, next_delay=185)
+                self._add_command_to_orders(action=ActionType.CLEAR_AND_SELECT, right=self.world.width,
+                                            bottom=self.world.height, group=IFV_GROUP)
+                self._add_command_to_orders(action=ActionType.MOVE, x=-74, y=0, next_delay=230)
+                self._add_command_to_orders(action=ActionType.MOVE, x=0, y=74, next_delay=230)
             if ifv_pos[0] == 5 and pos_unit['ifv'] == 9:
-                self._add_command_to_orders(action=ActionType.MOVE, x=-74, y=0, next_delay=185)
-                self._add_command_to_orders(action=ActionType.MOVE, x=0, y=-74, next_delay=185)
+                self._add_command_to_orders(action=ActionType.CLEAR_AND_SELECT, right=self.world.width,
+                                            bottom=self.world.height, group=IFV_GROUP)
+                self._add_command_to_orders(action=ActionType.MOVE, x=-74, y=0, next_delay=230)
+                self._add_command_to_orders(action=ActionType.MOVE, x=0, y=-74, next_delay=230)
 
             if ifv_pos[0] == 6 and pos_unit['ifv'] == 1:
-                self._add_command_to_orders(action=ActionType.MOVE, x=148, y=0, next_delay=370)
-                self._add_command_to_orders(action=ActionType.MOVE, x=0, y=74, next_delay=185)
+                self._add_command_to_orders(action=ActionType.CLEAR_AND_SELECT, right=self.world.width,
+                                            bottom=self.world.height, group=IFV_GROUP)
+                self._add_command_to_orders(action=ActionType.MOVE, x=148, y=0, next_delay=450)
+                self._add_command_to_orders(action=ActionType.MOVE, x=0, y=74, next_delay=230)
             if ifv_pos[0] == 6 and pos_unit['ifv'] == 7:
-                self._add_command_to_orders(action=ActionType.MOVE, x=148, y=0, next_delay=370)
-                self._add_command_to_orders(action=ActionType.MOVE, x=0, y=-74, next_delay=185)
+                self._add_command_to_orders(action=ActionType.CLEAR_AND_SELECT, right=self.world.width,
+                                            bottom=self.world.height, group=IFV_GROUP)
+                self._add_command_to_orders(action=ActionType.MOVE, x=148, y=0, next_delay=450)
+                self._add_command_to_orders(action=ActionType.MOVE, x=0, y=-74, next_delay=230)
             if ifv_pos[0] == 6 and pos_unit['ifv'] == 2:
-                self._add_command_to_orders(action=ActionType.MOVE, x=74, y=0, next_delay=185)
-                self._add_command_to_orders(action=ActionType.MOVE, x=0, y=74, next_delay=185)
+                self._add_command_to_orders(action=ActionType.CLEAR_AND_SELECT, right=self.world.width,
+                                            bottom=self.world.height, group=IFV_GROUP)
+                self._add_command_to_orders(action=ActionType.MOVE, x=74, y=0, next_delay=230)
+                self._add_command_to_orders(action=ActionType.MOVE, x=0, y=74, next_delay=230)
             if ifv_pos[0] == 6 and pos_unit['ifv'] == 8:
-                self._add_command_to_orders(action=ActionType.MOVE, x=74, y=0, next_delay=185)
-                self._add_command_to_orders(action=ActionType.MOVE, x=0, y=-74, next_delay=185)
+                self._add_command_to_orders(action=ActionType.CLEAR_AND_SELECT, right=self.world.width,
+                                            bottom=self.world.height, group=IFV_GROUP)
+                self._add_command_to_orders(action=ActionType.MOVE, x=74, y=0, next_delay=230)
+                self._add_command_to_orders(action=ActionType.MOVE, x=0, y=-74, next_delay=230)
             if ifv_pos[0] == 6 and pos_unit['ifv'] == 3:
-                self._add_command_to_orders(action=ActionType.MOVE, x=0, y=74, next_delay=185)
+                self._add_command_to_orders(action=ActionType.CLEAR_AND_SELECT, right=self.world.width,
+                                            bottom=self.world.height, group=IFV_GROUP)
+                self._add_command_to_orders(action=ActionType.MOVE, x=0, y=74, next_delay=230)
             if ifv_pos[0] == 6 and pos_unit['ifv'] == 9:
-                self._add_command_to_orders(action=ActionType.MOVE, x=0, y=-74, next_delay=185)
+                self._add_command_to_orders(action=ActionType.CLEAR_AND_SELECT, right=self.world.width,
+                                            bottom=self.world.height, group=IFV_GROUP)
+                self._add_command_to_orders(action=ActionType.MOVE, x=0, y=-74, next_delay=230)
 
         # arrv location (if 2 in middle)
-        self._add_command_to_orders(action=ActionType.CLEAR_AND_SELECT, right=self.world.width,
-                                    bottom=self.world.height, group=ARRV_GROUP)
         if (pos_unit['arrv'] not in [4, 5, 6]) and (pos_unit['ifv'] in [4, 5, 6]) and (pos_unit['tank'] in [4, 5, 6]):
             arrv_pos = [4, 5, 6]
             arrv_pos.remove(pos_unit['ifv'])
             arrv_pos.remove(pos_unit['tank'])
+            if DEBUG:
+                print('2 in of middle / ARRV', arrv_pos)
             if arrv_pos[0] == 4 and pos_unit['arrv'] == 1:
-                self._add_command_to_orders(action=ActionType.MOVE, x=0, y=74, next_delay=185)
+                self._add_command_to_orders(action=ActionType.CLEAR_AND_SELECT, right=self.world.width,
+                                            bottom=self.world.height, group=ARRV_GROUP)
+                self._add_command_to_orders(action=ActionType.MOVE, x=0, y=74, next_delay=230)
             if arrv_pos[0] == 4 and pos_unit['arrv'] == 7:
-                self._add_command_to_orders(action=ActionType.MOVE, x=0, y=-74, next_delay=185)
+                self._add_command_to_orders(action=ActionType.CLEAR_AND_SELECT, right=self.world.width,
+                                            bottom=self.world.height, group=ARRV_GROUP)
+                self._add_command_to_orders(action=ActionType.MOVE, x=0, y=-74, next_delay=230)
             if arrv_pos[0] == 4 and pos_unit['arrv'] == 2:
-                self._add_command_to_orders(action=ActionType.MOVE, x=-74, y=0, next_delay=185)
-                self._add_command_to_orders(action=ActionType.MOVE, x=0, y=74, next_delay=185)
+                self._add_command_to_orders(action=ActionType.CLEAR_AND_SELECT, right=self.world.width,
+                                            bottom=self.world.height, group=ARRV_GROUP)
+                self._add_command_to_orders(action=ActionType.MOVE, x=-74, y=0, next_delay=230)
+                self._add_command_to_orders(action=ActionType.MOVE, x=0, y=74, next_delay=230)
             if arrv_pos[0] == 4 and pos_unit['arrv'] == 8:
-                self._add_command_to_orders(action=ActionType.MOVE, x=-74, y=0, next_delay=185)
-                self._add_command_to_orders(action=ActionType.MOVE, x=0, y=-74, next_delay=185)
+                self._add_command_to_orders(action=ActionType.CLEAR_AND_SELECT, right=self.world.width,
+                                            bottom=self.world.height, group=ARRV_GROUP)
+                self._add_command_to_orders(action=ActionType.MOVE, x=-74, y=0, next_delay=230)
+                self._add_command_to_orders(action=ActionType.MOVE, x=0, y=-74, next_delay=230)
             if arrv_pos[0] == 4 and pos_unit['arrv'] == 3:
-                self._add_command_to_orders(action=ActionType.MOVE, x=-148, y=0, next_delay=370)
-                self._add_command_to_orders(action=ActionType.MOVE, x=0, y=74, next_delay=185)
+                self._add_command_to_orders(action=ActionType.CLEAR_AND_SELECT, right=self.world.width,
+                                            bottom=self.world.height, group=ARRV_GROUP)
+                self._add_command_to_orders(action=ActionType.MOVE, x=-148, y=0, next_delay=450)
+                self._add_command_to_orders(action=ActionType.MOVE, x=0, y=74, next_delay=230)
             if arrv_pos[0] == 4 and pos_unit['arrv'] == 9:
-                self._add_command_to_orders(action=ActionType.MOVE, x=-148, y=0, next_delay=370)
-                self._add_command_to_orders(action=ActionType.MOVE, x=0, y=-74, next_delay=185)
+                self._add_command_to_orders(action=ActionType.CLEAR_AND_SELECT, right=self.world.width,
+                                            bottom=self.world.height, group=ARRV_GROUP)
+                self._add_command_to_orders(action=ActionType.MOVE, x=-148, y=0, next_delay=450)
+                self._add_command_to_orders(action=ActionType.MOVE, x=0, y=-74, next_delay=230)
 
             if arrv_pos[0] == 5 and pos_unit['arrv'] == 1:
-                self._add_command_to_orders(action=ActionType.MOVE, x=74, y=0, next_delay=185)
-                self._add_command_to_orders(action=ActionType.MOVE, x=0, y=74, next_delay=185)
+                self._add_command_to_orders(action=ActionType.CLEAR_AND_SELECT, right=self.world.width,
+                                            bottom=self.world.height, group=ARRV_GROUP)
+                self._add_command_to_orders(action=ActionType.MOVE, x=74, y=0, next_delay=230)
+                self._add_command_to_orders(action=ActionType.MOVE, x=0, y=74, next_delay=230)
             if arrv_pos[0] == 5 and pos_unit['arrv'] == 7:
-                self._add_command_to_orders(action=ActionType.MOVE, x=74, y=0, next_delay=185)
-                self._add_command_to_orders(action=ActionType.MOVE, x=0, y=-74, next_delay=185)
+                self._add_command_to_orders(action=ActionType.CLEAR_AND_SELECT, right=self.world.width,
+                                            bottom=self.world.height, group=ARRV_GROUP)
+                self._add_command_to_orders(action=ActionType.MOVE, x=74, y=0, next_delay=230)
+                self._add_command_to_orders(action=ActionType.MOVE, x=0, y=-74, next_delay=230)
             if arrv_pos[0] == 5 and pos_unit['arrv'] == 2:
-                self._add_command_to_orders(action=ActionType.MOVE, x=0, y=74, next_delay=185)
+                self._add_command_to_orders(action=ActionType.CLEAR_AND_SELECT, right=self.world.width,
+                                            bottom=self.world.height, group=ARRV_GROUP)
+                self._add_command_to_orders(action=ActionType.MOVE, x=0, y=74, next_delay=230)
             if arrv_pos[0] == 5 and pos_unit['arrv'] == 8:
-                self._add_command_to_orders(action=ActionType.MOVE, x=0, y=-74, next_delay=185)
+                self._add_command_to_orders(action=ActionType.CLEAR_AND_SELECT, right=self.world.width,
+                                            bottom=self.world.height, group=ARRV_GROUP)
+                self._add_command_to_orders(action=ActionType.MOVE, x=0, y=-74, next_delay=230)
             if arrv_pos[0] == 5 and pos_unit['arrv'] == 3:
-                self._add_command_to_orders(action=ActionType.MOVE, x=-74, y=0, next_delay=185)
-                self._add_command_to_orders(action=ActionType.MOVE, x=0, y=74, next_delay=185)
+                self._add_command_to_orders(action=ActionType.CLEAR_AND_SELECT, right=self.world.width,
+                                            bottom=self.world.height, group=ARRV_GROUP)
+                self._add_command_to_orders(action=ActionType.MOVE, x=-74, y=0, next_delay=230)
+                self._add_command_to_orders(action=ActionType.MOVE, x=0, y=74, next_delay=230)
             if arrv_pos[0] == 5 and pos_unit['arrv'] == 9:
-                self._add_command_to_orders(action=ActionType.MOVE, x=-74, y=0, next_delay=185)
-                self._add_command_to_orders(action=ActionType.MOVE, x=0, y=-74, next_delay=185)
+                self._add_command_to_orders(action=ActionType.CLEAR_AND_SELECT, right=self.world.width,
+                                            bottom=self.world.height, group=ARRV_GROUP)
+                self._add_command_to_orders(action=ActionType.MOVE, x=-74, y=0, next_delay=230)
+                self._add_command_to_orders(action=ActionType.MOVE, x=0, y=-74, next_delay=230)
 
             if arrv_pos[0] == 6 and pos_unit['arrv'] == 1:
-                self._add_command_to_orders(action=ActionType.MOVE, x=148, y=0, next_delay=370)
-                self._add_command_to_orders(action=ActionType.MOVE, x=0, y=74, next_delay=185)
+                self._add_command_to_orders(action=ActionType.CLEAR_AND_SELECT, right=self.world.width,
+                                            bottom=self.world.height, group=ARRV_GROUP)
+                self._add_command_to_orders(action=ActionType.MOVE, x=148, y=0, next_delay=450)
+                self._add_command_to_orders(action=ActionType.MOVE, x=0, y=74, next_delay=230)
             if arrv_pos[0] == 6 and pos_unit['arrv'] == 7:
-                self._add_command_to_orders(action=ActionType.MOVE, x=148, y=0, next_delay=370)
-                self._add_command_to_orders(action=ActionType.MOVE, x=0, y=-74, next_delay=185)
+                self._add_command_to_orders(action=ActionType.CLEAR_AND_SELECT, right=self.world.width,
+                                            bottom=self.world.height, group=ARRV_GROUP)
+                self._add_command_to_orders(action=ActionType.MOVE, x=148, y=0, next_delay=450)
+                self._add_command_to_orders(action=ActionType.MOVE, x=0, y=-74, next_delay=230)
             if arrv_pos[0] == 6 and pos_unit['arrv'] == 2:
-                self._add_command_to_orders(action=ActionType.MOVE, x=74, y=0, next_delay=185)
-                self._add_command_to_orders(action=ActionType.MOVE, x=0, y=74, next_delay=185)
+                self._add_command_to_orders(action=ActionType.CLEAR_AND_SELECT, right=self.world.width,
+                                            bottom=self.world.height, group=ARRV_GROUP)
+                self._add_command_to_orders(action=ActionType.MOVE, x=74, y=0, next_delay=230)
+                self._add_command_to_orders(action=ActionType.MOVE, x=0, y=74, next_delay=230)
             if arrv_pos[0] == 6 and pos_unit['arrv'] == 8:
-                self._add_command_to_orders(action=ActionType.MOVE, x=74, y=0, next_delay=185)
-                self._add_command_to_orders(action=ActionType.MOVE, x=0, y=-74, next_delay=185)
+                self._add_command_to_orders(action=ActionType.CLEAR_AND_SELECT, right=self.world.width,
+                                            bottom=self.world.height, group=ARRV_GROUP)
+                self._add_command_to_orders(action=ActionType.MOVE, x=74, y=0, next_delay=230)
+                self._add_command_to_orders(action=ActionType.MOVE, x=0, y=-74, next_delay=230)
             if arrv_pos[0] == 6 and pos_unit['arrv'] == 3:
-                self._add_command_to_orders(action=ActionType.MOVE, x=0, y=74, next_delay=185)
+                self._add_command_to_orders(action=ActionType.CLEAR_AND_SELECT, right=self.world.width,
+                                            bottom=self.world.height, group=ARRV_GROUP)
+                self._add_command_to_orders(action=ActionType.MOVE, x=0, y=74, next_delay=230)
             if arrv_pos[0] == 6 and pos_unit['arrv'] == 9:
-                self._add_command_to_orders(action=ActionType.MOVE, x=0, y=-74, next_delay=185)
+                self._add_command_to_orders(action=ActionType.CLEAR_AND_SELECT, right=self.world.width,
+                                            bottom=self.world.height, group=ARRV_GROUP)
+                self._add_command_to_orders(action=ActionType.MOVE, x=0, y=-74, next_delay=230)
 
         # tank location (if 2 in middle)
-        self._add_command_to_orders(action=ActionType.CLEAR_AND_SELECT, right=self.world.width,
-                                    bottom=self.world.height, group=TANK_GROUP)
         if (pos_unit['tank'] not in [4, 5, 6]) and (pos_unit['ifv'] in [4, 5, 6]) and (pos_unit['arrv'] in [4, 5, 6]):
             tank_pos = [4, 5, 6]
             tank_pos.remove(pos_unit['ifv'])
             tank_pos.remove(pos_unit['arrv'])
+            if DEBUG:
+                print('2 in of middle / TANK', tank_pos)
             if tank_pos[0] == 4 and pos_unit['tank'] == 1:
-                self._add_command_to_orders(action=ActionType.MOVE, x=0, y=74, next_delay=247)
+                self._add_command_to_orders(action=ActionType.CLEAR_AND_SELECT, right=self.world.width,
+                                            bottom=self.world.height, group=TANK_GROUP)
+                self._add_command_to_orders(action=ActionType.MOVE, x=0, y=74, next_delay=300)
             if tank_pos[0] == 4 and pos_unit['tank'] == 7:
-                self._add_command_to_orders(action=ActionType.MOVE, x=0, y=-74, next_delay=247)
+                self._add_command_to_orders(action=ActionType.CLEAR_AND_SELECT, right=self.world.width,
+                                            bottom=self.world.height, group=TANK_GROUP)
+                self._add_command_to_orders(action=ActionType.MOVE, x=0, y=-74, next_delay=300)
             if tank_pos[0] == 4 and pos_unit['tank'] == 2:
-                self._add_command_to_orders(action=ActionType.MOVE, x=-74, y=0, next_delay=247)
-                self._add_command_to_orders(action=ActionType.MOVE, x=0, y=74, next_delay=247)
+                self._add_command_to_orders(action=ActionType.CLEAR_AND_SELECT, right=self.world.width,
+                                            bottom=self.world.height, group=TANK_GROUP)
+                self._add_command_to_orders(action=ActionType.MOVE, x=-74, y=0, next_delay=300)
+                self._add_command_to_orders(action=ActionType.MOVE, x=0, y=74, next_delay=300)
             if tank_pos[0] == 4 and pos_unit['tank'] == 8:
-                self._add_command_to_orders(action=ActionType.MOVE, x=-74, y=0, next_delay=247)
-                self._add_command_to_orders(action=ActionType.MOVE, x=0, y=-74, next_delay=247)
+                self._add_command_to_orders(action=ActionType.CLEAR_AND_SELECT, right=self.world.width,
+                                            bottom=self.world.height, group=TANK_GROUP)
+                self._add_command_to_orders(action=ActionType.MOVE, x=-74, y=0, next_delay=300)
+                self._add_command_to_orders(action=ActionType.MOVE, x=0, y=-74, next_delay=300)
             if tank_pos[0] == 4 and pos_unit['tank'] == 3:
-                self._add_command_to_orders(action=ActionType.MOVE, x=-148, y=0, next_delay=494)
-                self._add_command_to_orders(action=ActionType.MOVE, x=0, y=74, next_delay=247)
+                self._add_command_to_orders(action=ActionType.CLEAR_AND_SELECT, right=self.world.width,
+                                            bottom=self.world.height, group=TANK_GROUP)
+                self._add_command_to_orders(action=ActionType.MOVE, x=-148, y=0, next_delay=550)
+                self._add_command_to_orders(action=ActionType.MOVE, x=0, y=74, next_delay=300)
             if tank_pos[0] == 4 and pos_unit['tank'] == 9:
-                self._add_command_to_orders(action=ActionType.MOVE, x=-148, y=0, next_delay=494)
-                self._add_command_to_orders(action=ActionType.MOVE, x=0, y=-74, next_delay=247)
+                self._add_command_to_orders(action=ActionType.CLEAR_AND_SELECT, right=self.world.width,
+                                            bottom=self.world.height, group=TANK_GROUP)
+                self._add_command_to_orders(action=ActionType.MOVE, x=-148, y=0, next_delay=550)
+                self._add_command_to_orders(action=ActionType.MOVE, x=0, y=-74, next_delay=300)
 
             if tank_pos[0] == 5 and pos_unit['tank'] == 1:
-                self._add_command_to_orders(action=ActionType.MOVE, x=74, y=0, next_delay=247)
-                self._add_command_to_orders(action=ActionType.MOVE, x=0, y=74, next_delay=247)
+                self._add_command_to_orders(action=ActionType.CLEAR_AND_SELECT, right=self.world.width,
+                                            bottom=self.world.height, group=TANK_GROUP)
+                self._add_command_to_orders(action=ActionType.MOVE, x=74, y=0, next_delay=300)
+                self._add_command_to_orders(action=ActionType.MOVE, x=0, y=74, next_delay=300)
             if tank_pos[0] == 5 and pos_unit['tank'] == 7:
-                self._add_command_to_orders(action=ActionType.MOVE, x=74, y=0, next_delay=247)
-                self._add_command_to_orders(action=ActionType.MOVE, x=0, y=-74, next_delay=247)
+                self._add_command_to_orders(action=ActionType.CLEAR_AND_SELECT, right=self.world.width,
+                                            bottom=self.world.height, group=TANK_GROUP)
+                self._add_command_to_orders(action=ActionType.MOVE, x=74, y=0, next_delay=300)
+                self._add_command_to_orders(action=ActionType.MOVE, x=0, y=-74, next_delay=300)
             if tank_pos[0] == 5 and pos_unit['tank'] == 2:
-                self._add_command_to_orders(action=ActionType.MOVE, x=0, y=74, next_delay=247)
+                self._add_command_to_orders(action=ActionType.CLEAR_AND_SELECT, right=self.world.width,
+                                            bottom=self.world.height, group=TANK_GROUP)
+                self._add_command_to_orders(action=ActionType.MOVE, x=0, y=74, next_delay=300)
             if tank_pos[0] == 5 and pos_unit['tank'] == 8:
-                self._add_command_to_orders(action=ActionType.MOVE, x=0, y=-74, next_delay=247)
+                self._add_command_to_orders(action=ActionType.CLEAR_AND_SELECT, right=self.world.width,
+                                            bottom=self.world.height, group=TANK_GROUP)
+                self._add_command_to_orders(action=ActionType.MOVE, x=0, y=-74, next_delay=300)
             if tank_pos[0] == 5 and pos_unit['tank'] == 3:
-                self._add_command_to_orders(action=ActionType.MOVE, x=-74, y=0, next_delay=247)
-                self._add_command_to_orders(action=ActionType.MOVE, x=0, y=74, next_delay=247)
+                self._add_command_to_orders(action=ActionType.CLEAR_AND_SELECT, right=self.world.width,
+                                            bottom=self.world.height, group=TANK_GROUP)
+                self._add_command_to_orders(action=ActionType.MOVE, x=-74, y=0, next_delay=300)
+                self._add_command_to_orders(action=ActionType.MOVE, x=0, y=74, next_delay=300)
             if tank_pos[0] == 5 and pos_unit['tank'] == 9:
-                self._add_command_to_orders(action=ActionType.MOVE, x=-74, y=0, next_delay=247)
-                self._add_command_to_orders(action=ActionType.MOVE, x=0, y=-74, next_delay=247)
+                self._add_command_to_orders(action=ActionType.CLEAR_AND_SELECT, right=self.world.width,
+                                            bottom=self.world.height, group=TANK_GROUP)
+                self._add_command_to_orders(action=ActionType.MOVE, x=-74, y=0, next_delay=300)
+                self._add_command_to_orders(action=ActionType.MOVE, x=0, y=-74, next_delay=300)
 
             if tank_pos[0] == 6 and pos_unit['tank'] == 1:
-                self._add_command_to_orders(action=ActionType.MOVE, x=148, y=0, next_delay=494)
-                self._add_command_to_orders(action=ActionType.MOVE, x=0, y=74, next_delay=247)
+                self._add_command_to_orders(action=ActionType.CLEAR_AND_SELECT, right=self.world.width,
+                                            bottom=self.world.height, group=TANK_GROUP)
+                self._add_command_to_orders(action=ActionType.MOVE, x=148, y=0, next_delay=550)
+                self._add_command_to_orders(action=ActionType.MOVE, x=0, y=74, next_delay=300)
             if tank_pos[0] == 6 and pos_unit['tank'] == 7:
-                self._add_command_to_orders(action=ActionType.MOVE, x=148, y=0, next_delay=494)
-                self._add_command_to_orders(action=ActionType.MOVE, x=0, y=-74, next_delay=247)
+                self._add_command_to_orders(action=ActionType.CLEAR_AND_SELECT, right=self.world.width,
+                                            bottom=self.world.height, group=TANK_GROUP)
+                self._add_command_to_orders(action=ActionType.MOVE, x=148, y=0, next_delay=550)
+                self._add_command_to_orders(action=ActionType.MOVE, x=0, y=-74, next_delay=300)
             if tank_pos[0] == 6 and pos_unit['tank'] == 2:
-                self._add_command_to_orders(action=ActionType.MOVE, x=74, y=0, next_delay=247)
-                self._add_command_to_orders(action=ActionType.MOVE, x=0, y=74, next_delay=247)
+                self._add_command_to_orders(action=ActionType.CLEAR_AND_SELECT, right=self.world.width,
+                                            bottom=self.world.height, group=TANK_GROUP)
+                self._add_command_to_orders(action=ActionType.MOVE, x=74, y=0, next_delay=300)
+                self._add_command_to_orders(action=ActionType.MOVE, x=0, y=74, next_delay=300)
             if tank_pos[0] == 6 and pos_unit['tank'] == 8:
-                self._add_command_to_orders(action=ActionType.MOVE, x=74, y=0, next_delay=247)
-                self._add_command_to_orders(action=ActionType.MOVE, x=0, y=-74, next_delay=247)
+                self._add_command_to_orders(action=ActionType.CLEAR_AND_SELECT, right=self.world.width,
+                                            bottom=self.world.height, group=TANK_GROUP)
+                self._add_command_to_orders(action=ActionType.MOVE, x=74, y=0, next_delay=300)
+                self._add_command_to_orders(action=ActionType.MOVE, x=0, y=-74, next_delay=300)
             if tank_pos[0] == 6 and pos_unit['tank'] == 3:
-                self._add_command_to_orders(action=ActionType.MOVE, x=0, y=74, next_delay=247)
+                self._add_command_to_orders(action=ActionType.CLEAR_AND_SELECT, right=self.world.width,
+                                            bottom=self.world.height, group=TANK_GROUP)
+                self._add_command_to_orders(action=ActionType.MOVE, x=0, y=74, next_delay=300)
             if tank_pos[0] == 6 and pos_unit['tank'] == 9:
-                self._add_command_to_orders(action=ActionType.MOVE, x=0, y=-74, next_delay=247)
+                self._add_command_to_orders(action=ActionType.CLEAR_AND_SELECT, right=self.world.width,
+                                            bottom=self.world.height, group=TANK_GROUP)
+                self._add_command_to_orders(action=ActionType.MOVE, x=0, y=-74, next_delay=300)
 
         # all 3 not in middle
         if (pos_unit['tank'] in [1, 2, 3]) and (pos_unit['ifv'] in [1, 2, 3]) and (pos_unit['arrv'] in [1, 2, 3]):
+            if DEBUG:
+                print('3 not in middle 123')
             self._add_command_to_orders(action=ActionType.CLEAR_AND_SELECT, right=self.world.width,
                                         bottom=self.world.height, group=TANK_GROUP)
-            self._add_command_to_orders(action=ActionType.ADD_TO_SELECTION, group=IFV_GROUP)
-            self._add_command_to_orders(action=ActionType.ADD_TO_SELECTION, group=ARRV_GROUP)
-            self._add_command_to_orders(action=ActionType.MOVE, x=0, y=74, next_delay=247)
+            self._add_command_to_orders(action=ActionType.MOVE, x=0, y=74)
+            self._add_command_to_orders(action=ActionType.CLEAR_AND_SELECT, right=self.world.width,
+                                        bottom=self.world.height, group=IFV_GROUP)
+            self._add_command_to_orders(action=ActionType.MOVE, x=0, y=74)
+            self._add_command_to_orders(action=ActionType.CLEAR_AND_SELECT, right=self.world.width,
+                                        bottom=self.world.height, group=ARRV_GROUP)
+            self._add_command_to_orders(action=ActionType.MOVE, x=0, y=74, next_delay=300)
 
         elif (pos_unit['tank'] in [7, 8, 9]) and (pos_unit['ifv'] in [7, 8, 9]) and (pos_unit['arrv'] in [7, 8, 9]):
+            if DEBUG:
+                print('3 not in middle 789')
             self._add_command_to_orders(action=ActionType.CLEAR_AND_SELECT, right=self.world.width,
                                         bottom=self.world.height, group=TANK_GROUP)
-            self._add_command_to_orders(action=ActionType.ADD_TO_SELECTION, group=IFV_GROUP)
-            self._add_command_to_orders(action=ActionType.ADD_TO_SELECTION, group=ARRV_GROUP)
-            self._add_command_to_orders(action=ActionType.MOVE, x=0, y=-74, next_delay=247)
-        else:
+            self._add_command_to_orders(action=ActionType.MOVE, x=0, y=-74)
+            self._add_command_to_orders(action=ActionType.CLEAR_AND_SELECT, right=self.world.width,
+                                        bottom=self.world.height, group=IFV_GROUP)
+            self._add_command_to_orders(action=ActionType.MOVE, x=0, y=-74)
+            self._add_command_to_orders(action=ActionType.CLEAR_AND_SELECT, right=self.world.width,
+                                        bottom=self.world.height, group=ARRV_GROUP)
+            self._add_command_to_orders(action=ActionType.MOVE, x=0, y=-74, next_delay=300)
+        elif (pos_unit['tank'] in [1, 2, 3, 7, 8, 9]) and (pos_unit['ifv'] in [1, 2, 3, 7, 8, 9]) and (pos_unit['arrv'] in [1, 2, 3, 7, 8, 9]):
             vehicle_places = []
             vehicle_places.append(pos_unit['tank'])
             vehicle_places.append(pos_unit['arrv'])
             vehicle_places.append(pos_unit['ifv'])
             occupyed_places = []
+            if DEBUG:
+                print('3 not in middle diff', vehicle_places)
             if 1 in vehicle_places:
+                if DEBUG:
+                    print('1')
                 group_inside = ''
                 for key in ['tank', 'arrv', 'ifv']:
                     if pos_unit[key] == 1:
                         group_inside = key
                 if group_inside == 'tank':
-                    self._add_command_to_orders(action=ActionType.CLEAR_AND_SELECT, right=self.world.width,
-                                                bottom=self.world.height, group=TANK_GROUP)
-                    self._add_command_to_orders(action=ActionType.MOVE, x=0, y=74, next_delay=247)
+                    self._add_command_to_orders(action=ActionType.CLEAR_AND_SELECT, group=TANK_GROUP)
+                    self._add_command_to_orders(action=ActionType.MOVE, x=0, y=74, next_delay=300)
                 if group_inside == 'arrv':
-                    self._add_command_to_orders(action=ActionType.CLEAR_AND_SELECT, right=self.world.width,
-                                                bottom=self.world.height, group=ARRV_GROUP)
-                    self._add_command_to_orders(action=ActionType.MOVE, x=0, y=74, next_delay=185)
+                    self._add_command_to_orders(action=ActionType.CLEAR_AND_SELECT, group=ARRV_GROUP)
+                    self._add_command_to_orders(action=ActionType.MOVE, x=0, y=74, next_delay=230)
                 if group_inside == 'ifv':
-                    self._add_command_to_orders(action=ActionType.CLEAR_AND_SELECT, right=self.world.width,
-                                                bottom=self.world.height, group=IFV_GROUP)
-                    self._add_command_to_orders(action=ActionType.MOVE, x=0, y=74, next_delay=185)
+                    self._add_command_to_orders(action=ActionType.CLEAR_AND_SELECT, group=IFV_GROUP)
+                    self._add_command_to_orders(action=ActionType.MOVE, x=0, y=74, next_delay=230)
                 occupyed_places.append(4)
             if 2 in vehicle_places:
+                if DEBUG:
+                    print('2')
                 group_inside = ''
                 for key in ['tank', 'arrv', 'ifv']:
                     if pos_unit[key] == 2:
@@ -472,17 +842,19 @@ class TShirtBot:
                 if group_inside == 'tank':
                     self._add_command_to_orders(action=ActionType.CLEAR_AND_SELECT, right=self.world.width,
                                                 bottom=self.world.height, group=TANK_GROUP)
-                    self._add_command_to_orders(action=ActionType.MOVE, x=0, y=74, next_delay=247)
+                    self._add_command_to_orders(action=ActionType.MOVE, x=0, y=74, next_delay=300)
                 if group_inside == 'arrv':
                     self._add_command_to_orders(action=ActionType.CLEAR_AND_SELECT, right=self.world.width,
                                                 bottom=self.world.height, group=ARRV_GROUP)
-                    self._add_command_to_orders(action=ActionType.MOVE, x=0, y=74, next_delay=185)
+                    self._add_command_to_orders(action=ActionType.MOVE, x=0, y=74, next_delay=230)
                 if group_inside == 'ifv':
                     self._add_command_to_orders(action=ActionType.CLEAR_AND_SELECT, right=self.world.width,
                                                 bottom=self.world.height, group=IFV_GROUP)
-                    self._add_command_to_orders(action=ActionType.MOVE, x=0, y=74, next_delay=185)
+                    self._add_command_to_orders(action=ActionType.MOVE, x=0, y=74, next_delay=230)
                 occupyed_places.append(5)
             if 3 in vehicle_places:
+                if DEBUG:
+                    print('3')
                 group_inside = ''
                 for key in ['tank', 'arrv', 'ifv']:
                     if pos_unit[key] == 3:
@@ -490,17 +862,19 @@ class TShirtBot:
                 if group_inside == 'tank':
                     self._add_command_to_orders(action=ActionType.CLEAR_AND_SELECT, right=self.world.width,
                                                 bottom=self.world.height, group=TANK_GROUP)
-                    self._add_command_to_orders(action=ActionType.MOVE, x=0, y=74, next_delay=247)
+                    self._add_command_to_orders(action=ActionType.MOVE, x=0, y=74, next_delay=300)
                 if group_inside == 'arrv':
                     self._add_command_to_orders(action=ActionType.CLEAR_AND_SELECT, right=self.world.width,
                                                 bottom=self.world.height, group=ARRV_GROUP)
-                    self._add_command_to_orders(action=ActionType.MOVE, x=0, y=74, next_delay=185)
+                    self._add_command_to_orders(action=ActionType.MOVE, x=0, y=74, next_delay=230)
                 if group_inside == 'ifv':
                     self._add_command_to_orders(action=ActionType.CLEAR_AND_SELECT, right=self.world.width,
                                                 bottom=self.world.height, group=IFV_GROUP)
-                    self._add_command_to_orders(action=ActionType.MOVE, x=0, y=74, next_delay=185)
+                    self._add_command_to_orders(action=ActionType.MOVE, x=0, y=74, next_delay=230)
                 occupyed_places.append(6)
             if 8 in vehicle_places:
+                if DEBUG:
+                    print('8')
                 group_inside = ''
                 for key in ['tank', 'arrv', 'ifv']:
                     if pos_unit[key] == 8:
@@ -509,156 +883,160 @@ class TShirtBot:
                     if group_inside == 'tank':
                         self._add_command_to_orders(action=ActionType.CLEAR_AND_SELECT, right=self.world.width,
                                                     bottom=self.world.height, group=TANK_GROUP)
-                        self._add_command_to_orders(action=ActionType.MOVE, x=0, y=-74, next_delay=247)
+                        self._add_command_to_orders(action=ActionType.MOVE, x=0, y=-74, next_delay=300)
                     if group_inside == 'arrv':
                         self._add_command_to_orders(action=ActionType.CLEAR_AND_SELECT, right=self.world.width,
                                                     bottom=self.world.height, group=ARRV_GROUP)
-                        self._add_command_to_orders(action=ActionType.MOVE, x=0, y=-74, next_delay=185)
+                        self._add_command_to_orders(action=ActionType.MOVE, x=0, y=-74, next_delay=230)
                     if group_inside == 'ifv':
                         self._add_command_to_orders(action=ActionType.CLEAR_AND_SELECT, right=self.world.width,
                                                     bottom=self.world.height, group=IFV_GROUP)
-                        self._add_command_to_orders(action=ActionType.MOVE, x=0, y=-74, next_delay=185)
+                        self._add_command_to_orders(action=ActionType.MOVE, x=0, y=-74, next_delay=230)
                     occupyed_places.append(5)
                 else:
                     if 4 not in occupyed_places:
                         if group_inside == 'tank':
                             self._add_command_to_orders(action=ActionType.CLEAR_AND_SELECT, right=self.world.width,
                                                         bottom=self.world.height, group=TANK_GROUP)
-                            self._add_command_to_orders(action=ActionType.MOVE, x=-74, y=0, next_delay=247)
-                            self._add_command_to_orders(action=ActionType.MOVE, x=0, y=-74, next_delay=247)
+                            self._add_command_to_orders(action=ActionType.MOVE, x=-74, y=0, next_delay=300)
+                            self._add_command_to_orders(action=ActionType.MOVE, x=0, y=-74, next_delay=300)
                         if group_inside == 'arrv':
                             self._add_command_to_orders(action=ActionType.CLEAR_AND_SELECT, right=self.world.width,
                                                         bottom=self.world.height, group=ARRV_GROUP)
-                            self._add_command_to_orders(action=ActionType.MOVE, x=-74, y=0, next_delay=185)
-                            self._add_command_to_orders(action=ActionType.MOVE, x=0, y=-74, next_delay=185)
+                            self._add_command_to_orders(action=ActionType.MOVE, x=-74, y=0, next_delay=230)
+                            self._add_command_to_orders(action=ActionType.MOVE, x=0, y=-74, next_delay=230)
                         if group_inside == 'ifv':
                             self._add_command_to_orders(action=ActionType.CLEAR_AND_SELECT, right=self.world.width,
                                                         bottom=self.world.height, group=IFV_GROUP)
-                            self._add_command_to_orders(action=ActionType.MOVE, x=-74, y=0, next_delay=185)
-                            self._add_command_to_orders(action=ActionType.MOVE, x=0, y=-74, next_delay=185)
+                            self._add_command_to_orders(action=ActionType.MOVE, x=-74, y=0, next_delay=230)
+                            self._add_command_to_orders(action=ActionType.MOVE, x=0, y=-74, next_delay=230)
                         occupyed_places.append(5)
                     elif 6 not in occupyed_places:
                         if group_inside == 'tank':
                             self._add_command_to_orders(action=ActionType.CLEAR_AND_SELECT, right=self.world.width,
                                                         bottom=self.world.height, group=TANK_GROUP)
-                            self._add_command_to_orders(action=ActionType.MOVE, x=74, y=0, next_delay=247)
-                            self._add_command_to_orders(action=ActionType.MOVE, x=0, y=-74, next_delay=247)
+                            self._add_command_to_orders(action=ActionType.MOVE, x=74, y=0, next_delay=300)
+                            self._add_command_to_orders(action=ActionType.MOVE, x=0, y=-74, next_delay=300)
                         if group_inside == 'arrv':
                             self._add_command_to_orders(action=ActionType.CLEAR_AND_SELECT, right=self.world.width,
                                                         bottom=self.world.height, group=ARRV_GROUP)
-                            self._add_command_to_orders(action=ActionType.MOVE, x=74, y=0, next_delay=185)
-                            self._add_command_to_orders(action=ActionType.MOVE, x=0, y=-74, next_delay=185)
+                            self._add_command_to_orders(action=ActionType.MOVE, x=74, y=0, next_delay=230)
+                            self._add_command_to_orders(action=ActionType.MOVE, x=0, y=-74, next_delay=230)
                         if group_inside == 'ifv':
                             self._add_command_to_orders(action=ActionType.CLEAR_AND_SELECT, right=self.world.width,
                                                         bottom=self.world.height, group=IFV_GROUP)
-                            self._add_command_to_orders(action=ActionType.MOVE, x=74, y=0, next_delay=185)
-                            self._add_command_to_orders(action=ActionType.MOVE, x=0, y=-74, next_delay=185)
+                            self._add_command_to_orders(action=ActionType.MOVE, x=74, y=0, next_delay=230)
+                            self._add_command_to_orders(action=ActionType.MOVE, x=0, y=-74, next_delay=230)
                         occupyed_places.append(5)
             if 7 in vehicle_places:
+                if DEBUG:
+                    print('7')
                 group_inside = ''
                 for key in ['tank', 'arrv', 'ifv']:
-                    if pos_unit[key] == 8:
+                    if pos_unit[key] == 7:
                         group_inside = key
                 if 4 not in occupyed_places:
                     if group_inside == 'tank':
                         self._add_command_to_orders(action=ActionType.CLEAR_AND_SELECT, right=self.world.width,
                                                     bottom=self.world.height, group=TANK_GROUP)
-                        self._add_command_to_orders(action=ActionType.MOVE, x=0, y=-74, next_delay=247)
+                        self._add_command_to_orders(action=ActionType.MOVE, x=0, y=-74, next_delay=300)
                     if group_inside == 'arrv':
                         self._add_command_to_orders(action=ActionType.CLEAR_AND_SELECT, right=self.world.width,
                                                     bottom=self.world.height, group=ARRV_GROUP)
-                        self._add_command_to_orders(action=ActionType.MOVE, x=0, y=-74, next_delay=185)
+                        self._add_command_to_orders(action=ActionType.MOVE, x=0, y=-74, next_delay=230)
                     if group_inside == 'ifv':
                         self._add_command_to_orders(action=ActionType.CLEAR_AND_SELECT, right=self.world.width,
                                                     bottom=self.world.height, group=IFV_GROUP)
-                        self._add_command_to_orders(action=ActionType.MOVE, x=0, y=-74, next_delay=185)
+                        self._add_command_to_orders(action=ActionType.MOVE, x=0, y=-74, next_delay=230)
                     occupyed_places.append(4)
                 elif 5 not in occupyed_places:
                     if group_inside == 'tank':
                         self._add_command_to_orders(action=ActionType.CLEAR_AND_SELECT, right=self.world.width,
                                                     bottom=self.world.height, group=TANK_GROUP)
-                        self._add_command_to_orders(action=ActionType.MOVE, x=74, y=0, next_delay=247)
-                        self._add_command_to_orders(action=ActionType.MOVE, x=0, y=-74, next_delay=247)
+                        self._add_command_to_orders(action=ActionType.MOVE, x=74, y=0, next_delay=300)
+                        self._add_command_to_orders(action=ActionType.MOVE, x=0, y=-74, next_delay=300)
                     if group_inside == 'arrv':
                         self._add_command_to_orders(action=ActionType.CLEAR_AND_SELECT, right=self.world.width,
                                                     bottom=self.world.height, group=ARRV_GROUP)
-                        self._add_command_to_orders(action=ActionType.MOVE, x=74, y=0, next_delay=185)
-                        self._add_command_to_orders(action=ActionType.MOVE, x=0, y=-74, next_delay=185)
+                        self._add_command_to_orders(action=ActionType.MOVE, x=74, y=0, next_delay=230)
+                        self._add_command_to_orders(action=ActionType.MOVE, x=0, y=-74, next_delay=230)
                     if group_inside == 'ifv':
                         self._add_command_to_orders(action=ActionType.CLEAR_AND_SELECT, right=self.world.width,
                                                     bottom=self.world.height, group=IFV_GROUP)
-                        self._add_command_to_orders(action=ActionType.MOVE, x=74, y=0, next_delay=185)
-                        self._add_command_to_orders(action=ActionType.MOVE, x=0, y=-74, next_delay=185)
+                        self._add_command_to_orders(action=ActionType.MOVE, x=74, y=0, next_delay=230)
+                        self._add_command_to_orders(action=ActionType.MOVE, x=0, y=-74, next_delay=230)
                     occupyed_places.append(5)
                 elif 6 not in occupyed_places:
                     if group_inside == 'tank':
                         self._add_command_to_orders(action=ActionType.CLEAR_AND_SELECT, right=self.world.width,
                                                     bottom=self.world.height, group=TANK_GROUP)
-                        self._add_command_to_orders(action=ActionType.MOVE, x=148, y=0, next_delay=494)
-                        self._add_command_to_orders(action=ActionType.MOVE, x=0, y=-74, next_delay=247)
+                        self._add_command_to_orders(action=ActionType.MOVE, x=148, y=0, next_delay=550)
+                        self._add_command_to_orders(action=ActionType.MOVE, x=0, y=-74, next_delay=300)
                     if group_inside == 'arrv':
                         self._add_command_to_orders(action=ActionType.CLEAR_AND_SELECT, right=self.world.width,
                                                     bottom=self.world.height, group=ARRV_GROUP)
-                        self._add_command_to_orders(action=ActionType.MOVE, x=148, y=0, next_delay=370)
-                        self._add_command_to_orders(action=ActionType.MOVE, x=0, y=-74, next_delay=185)
+                        self._add_command_to_orders(action=ActionType.MOVE, x=148, y=0, next_delay=450)
+                        self._add_command_to_orders(action=ActionType.MOVE, x=0, y=-74, next_delay=230)
                     if group_inside == 'ifv':
                         self._add_command_to_orders(action=ActionType.CLEAR_AND_SELECT, right=self.world.width,
                                                     bottom=self.world.height, group=IFV_GROUP)
-                        self._add_command_to_orders(action=ActionType.MOVE, x=148, y=0, next_delay=370)
-                        self._add_command_to_orders(action=ActionType.MOVE, x=0, y=-74, next_delay=185)
+                        self._add_command_to_orders(action=ActionType.MOVE, x=148, y=0, next_delay=450)
+                        self._add_command_to_orders(action=ActionType.MOVE, x=0, y=-74, next_delay=230)
                     occupyed_places.append(6)
             if 9 in vehicle_places:
+                if DEBUG:
+                    print('9')
                 group_inside = ''
                 for key in ['tank', 'arrv', 'ifv']:
-                    if pos_unit[key] == 8:
+                    if pos_unit[key] == 9:
                         group_inside = key
                 if 6 not in occupyed_places:
                     if group_inside == 'tank':
                         self._add_command_to_orders(action=ActionType.CLEAR_AND_SELECT, right=self.world.width,
                                                     bottom=self.world.height, group=TANK_GROUP)
-                        self._add_command_to_orders(action=ActionType.MOVE, x=0, y=-74, next_delay=247)
+                        self._add_command_to_orders(action=ActionType.MOVE, x=0, y=-74, next_delay=300)
                     if group_inside == 'arrv':
                         self._add_command_to_orders(action=ActionType.CLEAR_AND_SELECT, right=self.world.width,
                                                     bottom=self.world.height, group=ARRV_GROUP)
-                        self._add_command_to_orders(action=ActionType.MOVE, x=0, y=-74, next_delay=185)
+                        self._add_command_to_orders(action=ActionType.MOVE, x=0, y=-74, next_delay=230)
                     if group_inside == 'ifv':
                         self._add_command_to_orders(action=ActionType.CLEAR_AND_SELECT, right=self.world.width,
                                                     bottom=self.world.height, group=IFV_GROUP)
-                        self._add_command_to_orders(action=ActionType.MOVE, x=0, y=-74, next_delay=185)
+                        self._add_command_to_orders(action=ActionType.MOVE, x=0, y=-74, next_delay=230)
                     occupyed_places.append(4)
                 elif 5 not in occupyed_places:
                     if group_inside == 'tank':
                         self._add_command_to_orders(action=ActionType.CLEAR_AND_SELECT, right=self.world.width,
                                                     bottom=self.world.height, group=TANK_GROUP)
-                        self._add_command_to_orders(action=ActionType.MOVE, x=-74, y=0, next_delay=247)
-                        self._add_command_to_orders(action=ActionType.MOVE, x=0, y=-74, next_delay=247)
+                        self._add_command_to_orders(action=ActionType.MOVE, x=-74, y=0, next_delay=300)
+                        self._add_command_to_orders(action=ActionType.MOVE, x=0, y=-74, next_delay=300)
                     if group_inside == 'arrv':
                         self._add_command_to_orders(action=ActionType.CLEAR_AND_SELECT, right=self.world.width,
                                                     bottom=self.world.height, group=ARRV_GROUP)
-                        self._add_command_to_orders(action=ActionType.MOVE, x=-74, y=0, next_delay=185)
-                        self._add_command_to_orders(action=ActionType.MOVE, x=0, y=-74, next_delay=185)
+                        self._add_command_to_orders(action=ActionType.MOVE, x=-74, y=0, next_delay=230)
+                        self._add_command_to_orders(action=ActionType.MOVE, x=0, y=-74, next_delay=230)
                     if group_inside == 'ifv':
                         self._add_command_to_orders(action=ActionType.CLEAR_AND_SELECT, right=self.world.width,
                                                     bottom=self.world.height, group=IFV_GROUP)
-                        self._add_command_to_orders(action=ActionType.MOVE, x=-74, y=0, next_delay=185)
-                        self._add_command_to_orders(action=ActionType.MOVE, x=0, y=-74, next_delay=185)
+                        self._add_command_to_orders(action=ActionType.MOVE, x=-74, y=0, next_delay=230)
+                        self._add_command_to_orders(action=ActionType.MOVE, x=0, y=-74, next_delay=230)
                     occupyed_places.append(5)
                 elif 4 not in occupyed_places:
                     if group_inside == 'tank':
                         self._add_command_to_orders(action=ActionType.CLEAR_AND_SELECT, right=self.world.width,
                                                     bottom=self.world.height, group=TANK_GROUP)
-                        self._add_command_to_orders(action=ActionType.MOVE, x=-148, y=0, next_delay=494)
-                        self._add_command_to_orders(action=ActionType.MOVE, x=0, y=-74, next_delay=247)
+                        self._add_command_to_orders(action=ActionType.MOVE, x=-148, y=0, next_delay=550)
+                        self._add_command_to_orders(action=ActionType.MOVE, x=0, y=-74, next_delay=300)
                     if group_inside == 'arrv':
                         self._add_command_to_orders(action=ActionType.CLEAR_AND_SELECT, right=self.world.width,
                                                     bottom=self.world.height, group=ARRV_GROUP)
-                        self._add_command_to_orders(action=ActionType.MOVE, x=-148, y=0, next_delay=370)
-                        self._add_command_to_orders(action=ActionType.MOVE, x=0, y=-74, next_delay=185)
+                        self._add_command_to_orders(action=ActionType.MOVE, x=-148, y=0, next_delay=450)
+                        self._add_command_to_orders(action=ActionType.MOVE, x=0, y=-74, next_delay=230)
                     if group_inside == 'ifv':
                         self._add_command_to_orders(action=ActionType.CLEAR_AND_SELECT, right=self.world.width,
                                                     bottom=self.world.height, group=IFV_GROUP)
-                        self._add_command_to_orders(action=ActionType.MOVE, x=-148, y=0, next_delay=370)
-                        self._add_command_to_orders(action=ActionType.MOVE, x=0, y=-74, next_delay=185)
+                        self._add_command_to_orders(action=ActionType.MOVE, x=-148, y=0, next_delay=450)
+                        self._add_command_to_orders(action=ActionType.MOVE, x=0, y=-74, next_delay=230)
                     occupyed_places.append(6)
 
         # 2 groups out of middle, 1 in middle
@@ -670,8 +1048,14 @@ class TShirtBot:
         if pos_unit['arrv'] in [4, 5, 6]:
             counter += 1
         if counter == 1:
-            if 4 in pos_units_ground:
-                if 1 in pos_units_ground and 2 in pos_units_ground:
+            if DEBUG:
+                print('2 out of middle', pos_units_ground)
+            if 4 in pos_units_ground.values():
+                if DEBUG:
+                    print('4 in pos_units_ground:')
+                if 1 in pos_units_ground.values() and 2 in pos_units_ground.values():
+                    if DEBUG:
+                        print('1 in pos_units_ground and 2 in pos_units_ground')
                     if pos_unit['tank'] == 4:
                         self._add_command_to_orders(action=ActionType.CLEAR_AND_SELECT, right=self.world.width,
                                                     bottom=self.world.height, group=IFV_GROUP)
@@ -687,21 +1071,23 @@ class TShirtBot:
                                                     bottom=self.world.height, group=TANK_GROUP)
                         self._add_command_to_orders(action=ActionType.ADD_TO_SELECTION, right=self.world.width,
                                                     bottom=self.world.height, group=ARRV_GROUP)
-                    self._add_command_to_orders(action=ActionType.MOVE, x=74, y=0, next_delay=247)
-                    self._add_command_to_orders(action=ActionType.MOVE, x=0, y=74, next_delay=247)
-                elif 1 in pos_units_ground and 3 in pos_units_ground:
+                    self._add_command_to_orders(action=ActionType.MOVE, x=74, y=0, next_delay=300)
+                    self._add_command_to_orders(action=ActionType.MOVE, x=0, y=74, next_delay=300)
+                elif 1 in pos_units_ground.values() and 3 in pos_units_ground.values():
+                    if DEBUG:
+                        print('1 in pos_units_ground and 3 in pos_units_ground')
                     if pos_unit['tank'] == 1:
                         self._add_command_to_orders(action=ActionType.CLEAR_AND_SELECT, right=self.world.width,
                                                     bottom=self.world.height, group=TANK_GROUP)
-                        self._add_command_to_orders(action=ActionType.MOVE, x=74, y=0, next_delay=247)
+                        self._add_command_to_orders(action=ActionType.MOVE, x=74, y=0, next_delay=300)
                     if pos_unit['arrv'] == 1:
                         self._add_command_to_orders(action=ActionType.CLEAR_AND_SELECT, right=self.world.width,
                                                     bottom=self.world.height, group=ARRV_GROUP)
-                        self._add_command_to_orders(action=ActionType.MOVE, x=74, y=0, next_delay=185)
+                        self._add_command_to_orders(action=ActionType.MOVE, x=74, y=0, next_delay=230)
                     if pos_unit['ifv'] == 1:
                         self._add_command_to_orders(action=ActionType.CLEAR_AND_SELECT, right=self.world.width,
                                                     bottom=self.world.height, group=IFV_GROUP)
-                        self._add_command_to_orders(action=ActionType.MOVE, x=74, y=0, next_delay=185)
+                        self._add_command_to_orders(action=ActionType.MOVE, x=74, y=0, next_delay=230)
                     if pos_unit['tank'] == 3:
                         self._add_command_to_orders(action=ActionType.CLEAR_AND_SELECT, right=self.world.width,
                                                     bottom=self.world.height, group=TANK_GROUP)
@@ -711,286 +1097,307 @@ class TShirtBot:
                     if pos_unit['ifv'] == 3:
                         self._add_command_to_orders(action=ActionType.CLEAR_AND_SELECT, right=self.world.width,
                                                     bottom=self.world.height, group=IFV_GROUP)
-                    self._add_command_to_orders(action=ActionType.MOVE, x=0, y=74, next_delay=247)
-
-                elif 1 in pos_units_ground and 7 in pos_units_ground:
+                    self._add_command_to_orders(action=ActionType.MOVE, x=0, y=74, next_delay=300)
+                elif 1 in pos_units_ground.values() and 7 in pos_units_ground.values():
+                    if DEBUG:
+                        print('1 in pos_units_ground and 7 in pos_units_ground')
                     if pos_unit['tank'] == 1:
                         self._add_command_to_orders(action=ActionType.CLEAR_AND_SELECT, right=self.world.width,
                                                     bottom=self.world.height, group=TANK_GROUP)
-                        self._add_command_to_orders(action=ActionType.MOVE, x=74, y=0, next_delay=247)
-                        self._add_command_to_orders(action=ActionType.MOVE, x=0, y=74, next_delay=247)
+                        self._add_command_to_orders(action=ActionType.MOVE, x=74, y=0, next_delay=300)
+                        self._add_command_to_orders(action=ActionType.MOVE, x=0, y=74, next_delay=300)
                     if pos_unit['arrv'] == 1:
                         self._add_command_to_orders(action=ActionType.CLEAR_AND_SELECT, right=self.world.width,
                                                     bottom=self.world.height, group=ARRV_GROUP)
-                        self._add_command_to_orders(action=ActionType.MOVE, x=74, y=0, next_delay=185)
-                        self._add_command_to_orders(action=ActionType.MOVE, x=0, y=74, next_delay=185)
+                        self._add_command_to_orders(action=ActionType.MOVE, x=74, y=0, next_delay=230)
+                        self._add_command_to_orders(action=ActionType.MOVE, x=0, y=74, next_delay=230)
                     if pos_unit['ifv'] == 1:
                         self._add_command_to_orders(action=ActionType.CLEAR_AND_SELECT, right=self.world.width,
                                                     bottom=self.world.height, group=IFV_GROUP)
-                        self._add_command_to_orders(action=ActionType.MOVE, x=74, y=0, next_delay=185)
-                        self._add_command_to_orders(action=ActionType.MOVE, x=0, y=74, next_delay=185)
+                        self._add_command_to_orders(action=ActionType.MOVE, x=74, y=0, next_delay=230)
+                        self._add_command_to_orders(action=ActionType.MOVE, x=0, y=74, next_delay=230)
                     if pos_unit['tank'] == 7:
                         self._add_command_to_orders(action=ActionType.CLEAR_AND_SELECT, right=self.world.width,
                                                     bottom=self.world.height, group=TANK_GROUP)
-                        self._add_command_to_orders(action=ActionType.MOVE, x=148, y=0, next_delay=494)
-                        self._add_command_to_orders(action=ActionType.MOVE, x=0, y=-74, next_delay=247)
+                        self._add_command_to_orders(action=ActionType.MOVE, x=148, y=0, next_delay=550)
+                        self._add_command_to_orders(action=ActionType.MOVE, x=0, y=-74, next_delay=300)
                     if pos_unit['arrv'] == 7:
                         self._add_command_to_orders(action=ActionType.CLEAR_AND_SELECT, right=self.world.width,
                                                     bottom=self.world.height, group=ARRV_GROUP)
-                        self._add_command_to_orders(action=ActionType.MOVE, x=148, y=0, next_delay=370)
-                        self._add_command_to_orders(action=ActionType.MOVE, x=0, y=-74, next_delay=185)
+                        self._add_command_to_orders(action=ActionType.MOVE, x=148, y=0, next_delay=450)
+                        self._add_command_to_orders(action=ActionType.MOVE, x=0, y=-74, next_delay=230)
                     if pos_unit['ifv'] == 7:
                         self._add_command_to_orders(action=ActionType.CLEAR_AND_SELECT, right=self.world.width,
                                                     bottom=self.world.height, group=IFV_GROUP)
-                        self._add_command_to_orders(action=ActionType.MOVE, x=148, y=0, next_delay=370)
-                        self._add_command_to_orders(action=ActionType.MOVE, x=0, y=-74, next_delay=185)
-                elif 1 in pos_units_ground and 8 in pos_units_ground:
+                        self._add_command_to_orders(action=ActionType.MOVE, x=148, y=0, next_delay=450)
+                        self._add_command_to_orders(action=ActionType.MOVE, x=0, y=-74, next_delay=230)
+                elif 1 in pos_units_ground.values() and 8 in pos_units_ground.values():
+                    if DEBUG:
+                        print('1 in pos_units_ground and 8 in pos_units_ground')
                     if pos_unit['tank'] == 1:
                         self._add_command_to_orders(action=ActionType.CLEAR_AND_SELECT, right=self.world.width,
                                                     bottom=self.world.height, group=TANK_GROUP)
-                        self._add_command_to_orders(action=ActionType.MOVE, x=74, y=0, next_delay=247)
-                        self._add_command_to_orders(action=ActionType.MOVE, x=0, y=74, next_delay=247)
+                        self._add_command_to_orders(action=ActionType.MOVE, x=74, y=0, next_delay=300)
+                        self._add_command_to_orders(action=ActionType.MOVE, x=0, y=74, next_delay=300)
                     if pos_unit['arrv'] == 1:
                         self._add_command_to_orders(action=ActionType.CLEAR_AND_SELECT, right=self.world.width,
                                                     bottom=self.world.height, group=ARRV_GROUP)
-                        self._add_command_to_orders(action=ActionType.MOVE, x=74, y=0, next_delay=185)
-                        self._add_command_to_orders(action=ActionType.MOVE, x=0, y=74, next_delay=185)
+                        self._add_command_to_orders(action=ActionType.MOVE, x=74, y=0, next_delay=230)
+                        self._add_command_to_orders(action=ActionType.MOVE, x=0, y=74, next_delay=230)
                     if pos_unit['ifv'] == 1:
                         self._add_command_to_orders(action=ActionType.CLEAR_AND_SELECT, right=self.world.width,
                                                     bottom=self.world.height, group=IFV_GROUP)
-                        self._add_command_to_orders(action=ActionType.MOVE, x=74, y=0, next_delay=185)
-                        self._add_command_to_orders(action=ActionType.MOVE, x=0, y=74, next_delay=185)
+                        self._add_command_to_orders(action=ActionType.MOVE, x=74, y=0, next_delay=230)
+                        self._add_command_to_orders(action=ActionType.MOVE, x=0, y=74, next_delay=230)
                     if pos_unit['tank'] == 8:
                         self._add_command_to_orders(action=ActionType.CLEAR_AND_SELECT, right=self.world.width,
                                                     bottom=self.world.height, group=TANK_GROUP)
-                        self._add_command_to_orders(action=ActionType.MOVE, x=74, y=0, next_delay=247)
-                        self._add_command_to_orders(action=ActionType.MOVE, x=0, y=-74, next_delay=247)
+                        self._add_command_to_orders(action=ActionType.MOVE, x=74, y=0, next_delay=300)
+                        self._add_command_to_orders(action=ActionType.MOVE, x=0, y=-74, next_delay=300)
                     if pos_unit['arrv'] == 8:
                         self._add_command_to_orders(action=ActionType.CLEAR_AND_SELECT, right=self.world.width,
                                                     bottom=self.world.height, group=ARRV_GROUP)
-                        self._add_command_to_orders(action=ActionType.MOVE, x=74, y=0, next_delay=185)
-                        self._add_command_to_orders(action=ActionType.MOVE, x=0, y=-74, next_delay=185)
+                        self._add_command_to_orders(action=ActionType.MOVE, x=74, y=0, next_delay=230)
+                        self._add_command_to_orders(action=ActionType.MOVE, x=0, y=-74, next_delay=230)
                     if pos_unit['ifv'] == 8:
                         self._add_command_to_orders(action=ActionType.CLEAR_AND_SELECT, right=self.world.width,
                                                     bottom=self.world.height, group=IFV_GROUP)
-                        self._add_command_to_orders(action=ActionType.MOVE, x=74, y=0, next_delay=185)
-                        self._add_command_to_orders(action=ActionType.MOVE, x=0, y=-74, next_delay=185)
-                elif 1 in pos_units_ground and 9 in pos_units_ground:
+                        self._add_command_to_orders(action=ActionType.MOVE, x=74, y=0, next_delay=230)
+                        self._add_command_to_orders(action=ActionType.MOVE, x=0, y=-74, next_delay=230)
+                elif 1 in pos_units_ground.values() and 9 in pos_units_ground.values():
+                    if DEBUG:
+                        print('1 in pos_units_ground and 9 in pos_units_ground')
                     if pos_unit['tank'] == 1:
                         self._add_command_to_orders(action=ActionType.CLEAR_AND_SELECT, right=self.world.width,
                                                     bottom=self.world.height, group=TANK_GROUP)
-                        self._add_command_to_orders(action=ActionType.MOVE, x=74, y=0, next_delay=247)
-                        self._add_command_to_orders(action=ActionType.MOVE, x=0, y=74, next_delay=247)
+                        self._add_command_to_orders(action=ActionType.MOVE, x=74, y=0, next_delay=300)
+                        self._add_command_to_orders(action=ActionType.MOVE, x=0, y=74, next_delay=300)
                     if pos_unit['arrv'] == 1:
                         self._add_command_to_orders(action=ActionType.CLEAR_AND_SELECT, right=self.world.width,
                                                     bottom=self.world.height, group=ARRV_GROUP)
-                        self._add_command_to_orders(action=ActionType.MOVE, x=74, y=0, next_delay=185)
-                        self._add_command_to_orders(action=ActionType.MOVE, x=0, y=74, next_delay=185)
+                        self._add_command_to_orders(action=ActionType.MOVE, x=74, y=0, next_delay=230)
+                        self._add_command_to_orders(action=ActionType.MOVE, x=0, y=74, next_delay=230)
                     if pos_unit['ifv'] == 1:
                         self._add_command_to_orders(action=ActionType.CLEAR_AND_SELECT, right=self.world.width,
                                                     bottom=self.world.height, group=IFV_GROUP)
-                        self._add_command_to_orders(action=ActionType.MOVE, x=74, y=0, next_delay=185)
-                        self._add_command_to_orders(action=ActionType.MOVE, x=0, y=74, next_delay=185)
+                        self._add_command_to_orders(action=ActionType.MOVE, x=74, y=0, next_delay=230)
+                        self._add_command_to_orders(action=ActionType.MOVE, x=0, y=74, next_delay=230)
                     if pos_unit['tank'] == 9:
                         self._add_command_to_orders(action=ActionType.CLEAR_AND_SELECT, right=self.world.width,
                                                     bottom=self.world.height, group=TANK_GROUP)
-                        self._add_command_to_orders(action=ActionType.MOVE, x=0, y=-74, next_delay=247)
+                        self._add_command_to_orders(action=ActionType.MOVE, x=0, y=-74, next_delay=300)
                     if pos_unit['arrv'] == 9:
                         self._add_command_to_orders(action=ActionType.CLEAR_AND_SELECT, right=self.world.width,
                                                     bottom=self.world.height, group=ARRV_GROUP)
-                        self._add_command_to_orders(action=ActionType.MOVE, x=0, y=-74, next_delay=185)
+                        self._add_command_to_orders(action=ActionType.MOVE, x=0, y=-74, next_delay=230)
                     if pos_unit['ifv'] == 9:
                         self._add_command_to_orders(action=ActionType.CLEAR_AND_SELECT, right=self.world.width,
                                                     bottom=self.world.height, group=IFV_GROUP)
-                        self._add_command_to_orders(action=ActionType.MOVE, x=0, y=-74, next_delay=185)
-                elif 2 in pos_units_ground and 3 in pos_units_ground:
+                        self._add_command_to_orders(action=ActionType.MOVE, x=0, y=-74, next_delay=230)
+                elif 2 in pos_units_ground.values() and 3 in pos_units_ground.values():
+                    if DEBUG:
+                        print('2 in pos_units_ground and 3 in pos_units_ground')
                     if pos_unit['tank'] == 2:
                         self._add_command_to_orders(action=ActionType.CLEAR_AND_SELECT, right=self.world.width,
                                                     bottom=self.world.height, group=TANK_GROUP)
-                        self._add_command_to_orders(action=ActionType.MOVE, x=0, y=74, next_delay=247)
+                        self._add_command_to_orders(action=ActionType.MOVE, x=0, y=74, next_delay=300)
                     if pos_unit['arrv'] == 2:
                         self._add_command_to_orders(action=ActionType.CLEAR_AND_SELECT, right=self.world.width,
                                                     bottom=self.world.height, group=ARRV_GROUP)
-                        self._add_command_to_orders(action=ActionType.MOVE, x=0, y=74, next_delay=185)
+                        self._add_command_to_orders(action=ActionType.MOVE, x=0, y=74, next_delay=230)
                     if pos_unit['ifv'] == 2:
                         self._add_command_to_orders(action=ActionType.CLEAR_AND_SELECT, right=self.world.width,
                                                     bottom=self.world.height, group=IFV_GROUP)
-                        self._add_command_to_orders(action=ActionType.MOVE, x=0, y=74, next_delay=185)
+                        self._add_command_to_orders(action=ActionType.MOVE, x=0, y=74, next_delay=230)
                     if pos_unit['tank'] == 3:
                         self._add_command_to_orders(action=ActionType.CLEAR_AND_SELECT, right=self.world.width,
                                                     bottom=self.world.height, group=TANK_GROUP)
-                        self._add_command_to_orders(action=ActionType.MOVE, x=0, y=74, next_delay=247)
+                        self._add_command_to_orders(action=ActionType.MOVE, x=0, y=74, next_delay=300)
                     if pos_unit['arrv'] == 3:
                         self._add_command_to_orders(action=ActionType.CLEAR_AND_SELECT, right=self.world.width,
                                                     bottom=self.world.height, group=ARRV_GROUP)
-                        self._add_command_to_orders(action=ActionType.MOVE, x=0, y=74, next_delay=185)
+                        self._add_command_to_orders(action=ActionType.MOVE, x=0, y=74, next_delay=230)
                     if pos_unit['ifv'] == 3:
                         self._add_command_to_orders(action=ActionType.CLEAR_AND_SELECT, right=self.world.width,
                                                     bottom=self.world.height, group=IFV_GROUP)
-                        self._add_command_to_orders(action=ActionType.MOVE, x=0, y=74, next_delay=185)
-                elif 2 in pos_units_ground and 7 in pos_units_ground:
+                        self._add_command_to_orders(action=ActionType.MOVE, x=0, y=74, next_delay=230)
+                elif 2 in pos_units_ground.values() and 7 in pos_units_ground.values():
+                    if DEBUG:
+                        print('2 in pos_units_ground and 7 in pos_units_ground')
                     if pos_unit['tank'] == 2:
                         self._add_command_to_orders(action=ActionType.CLEAR_AND_SELECT, right=self.world.width,
                                                     bottom=self.world.height, group=TANK_GROUP)
-                        self._add_command_to_orders(action=ActionType.MOVE, x=0, y=74, next_delay=247)
+                        self._add_command_to_orders(action=ActionType.MOVE, x=0, y=74, next_delay=300)
                     if pos_unit['arrv'] == 2:
                         self._add_command_to_orders(action=ActionType.CLEAR_AND_SELECT, right=self.world.width,
                                                     bottom=self.world.height, group=ARRV_GROUP)
-                        self._add_command_to_orders(action=ActionType.MOVE, x=0, y=74, next_delay=185)
+                        self._add_command_to_orders(action=ActionType.MOVE, x=0, y=74, next_delay=230)
                     if pos_unit['ifv'] == 2:
                         self._add_command_to_orders(action=ActionType.CLEAR_AND_SELECT, right=self.world.width,
                                                     bottom=self.world.height, group=IFV_GROUP)
-                        self._add_command_to_orders(action=ActionType.MOVE, x=0, y=74, next_delay=185)
+                        self._add_command_to_orders(action=ActionType.MOVE, x=0, y=74, next_delay=230)
                     if pos_unit['tank'] == 7:
                         self._add_command_to_orders(action=ActionType.CLEAR_AND_SELECT, right=self.world.width,
                                                     bottom=self.world.height, group=TANK_GROUP)
-                        self._add_command_to_orders(action=ActionType.MOVE, x=74, y=0, next_delay=247)
-                        self._add_command_to_orders(action=ActionType.MOVE, x=0, y=-74, next_delay=247)
+                        self._add_command_to_orders(action=ActionType.MOVE, x=74, y=0, next_delay=300)
+                        self._add_command_to_orders(action=ActionType.MOVE, x=0, y=-74, next_delay=300)
                     if pos_unit['arrv'] == 7:
                         self._add_command_to_orders(action=ActionType.CLEAR_AND_SELECT, right=self.world.width,
                                                     bottom=self.world.height, group=ARRV_GROUP)
-                        self._add_command_to_orders(action=ActionType.MOVE, x=74, y=0, next_delay=185)
-                        self._add_command_to_orders(action=ActionType.MOVE, x=0, y=-74, next_delay=185)
+                        self._add_command_to_orders(action=ActionType.MOVE, x=74, y=0, next_delay=230)
+                        self._add_command_to_orders(action=ActionType.MOVE, x=0, y=-74, next_delay=230)
                     if pos_unit['ifv'] == 7:
                         self._add_command_to_orders(action=ActionType.CLEAR_AND_SELECT, right=self.world.width,
                                                     bottom=self.world.height, group=IFV_GROUP)
-                        self._add_command_to_orders(action=ActionType.MOVE, x=74, y=0, next_delay=185)
-                        self._add_command_to_orders(action=ActionType.MOVE, x=0, y=-74, next_delay=185)
-                elif 2 in pos_units_ground and 8 in pos_units_ground:
+                        self._add_command_to_orders(action=ActionType.MOVE, x=74, y=0, next_delay=230)
+                        self._add_command_to_orders(action=ActionType.MOVE, x=0, y=-74, next_delay=230)
+                elif 2 in pos_units_ground.values() and 8 in pos_units_ground.values():
+                    if DEBUG:
+                        print('2 in pos_units_ground and 8 in pos_units_ground')
                     if pos_unit['tank'] == 2:
                         self._add_command_to_orders(action=ActionType.CLEAR_AND_SELECT, right=self.world.width,
                                                     bottom=self.world.height, group=TANK_GROUP)
-                        self._add_command_to_orders(action=ActionType.MOVE, x=0, y=74, next_delay=247)
+                        self._add_command_to_orders(action=ActionType.MOVE, x=0, y=74, next_delay=300)
                     if pos_unit['arrv'] == 2:
                         self._add_command_to_orders(action=ActionType.CLEAR_AND_SELECT, right=self.world.width,
                                                     bottom=self.world.height, group=ARRV_GROUP)
-                        self._add_command_to_orders(action=ActionType.MOVE, x=0, y=74, next_delay=185)
+                        self._add_command_to_orders(action=ActionType.MOVE, x=0, y=74, next_delay=230)
                     if pos_unit['ifv'] == 2:
                         self._add_command_to_orders(action=ActionType.CLEAR_AND_SELECT, right=self.world.width,
                                                     bottom=self.world.height, group=IFV_GROUP)
-                        self._add_command_to_orders(action=ActionType.MOVE, x=0, y=74, next_delay=185)
+                        self._add_command_to_orders(action=ActionType.MOVE, x=0, y=74, next_delay=230)
                     if pos_unit['tank'] == 8:
                         self._add_command_to_orders(action=ActionType.CLEAR_AND_SELECT, right=self.world.width,
                                                     bottom=self.world.height, group=TANK_GROUP)
-                        self._add_command_to_orders(action=ActionType.MOVE, x=74, y=0, next_delay=247)
-                        self._add_command_to_orders(action=ActionType.MOVE, x=0, y=-74, next_delay=247)
+                        self._add_command_to_orders(action=ActionType.MOVE, x=74, y=0, next_delay=300)
+                        self._add_command_to_orders(action=ActionType.MOVE, x=0, y=-74, next_delay=300)
                     if pos_unit['arrv'] == 8:
                         self._add_command_to_orders(action=ActionType.CLEAR_AND_SELECT, right=self.world.width,
                                                     bottom=self.world.height, group=ARRV_GROUP)
-                        self._add_command_to_orders(action=ActionType.MOVE, x=74, y=0, next_delay=185)
-                        self._add_command_to_orders(action=ActionType.MOVE, x=0, y=-74, next_delay=185)
+                        self._add_command_to_orders(action=ActionType.MOVE, x=74, y=0, next_delay=230)
+                        self._add_command_to_orders(action=ActionType.MOVE, x=0, y=-74, next_delay=230)
                     if pos_unit['ifv'] == 8:
                         self._add_command_to_orders(action=ActionType.CLEAR_AND_SELECT, right=self.world.width,
                                                     bottom=self.world.height, group=IFV_GROUP)
-                        self._add_command_to_orders(action=ActionType.MOVE, x=74, y=0, next_delay=185)
-                        self._add_command_to_orders(action=ActionType.MOVE, x=0, y=-74, next_delay=185)
-                elif 2 in pos_units_ground and 9 in pos_units_ground:
+                        self._add_command_to_orders(action=ActionType.MOVE, x=74, y=0, next_delay=230)
+                        self._add_command_to_orders(action=ActionType.MOVE, x=0, y=-74, next_delay=230)
+                elif 2 in pos_units_ground.values() and 9 in pos_units_ground.values():
+                    if DEBUG:
+                        print('2 in pos_units_ground and 9 in pos_units_ground')
                     if pos_unit['tank'] == 2:
                         self._add_command_to_orders(action=ActionType.CLEAR_AND_SELECT, right=self.world.width,
                                                     bottom=self.world.height, group=TANK_GROUP)
-                        self._add_command_to_orders(action=ActionType.MOVE, x=0, y=74, next_delay=247)
+                        self._add_command_to_orders(action=ActionType.MOVE, x=0, y=74, next_delay=300)
                     if pos_unit['arrv'] == 2:
                         self._add_command_to_orders(action=ActionType.CLEAR_AND_SELECT, right=self.world.width,
                                                     bottom=self.world.height, group=ARRV_GROUP)
-                        self._add_command_to_orders(action=ActionType.MOVE, x=0, y=74, next_delay=185)
+                        self._add_command_to_orders(action=ActionType.MOVE, x=0, y=74, next_delay=230)
                     if pos_unit['ifv'] == 2:
                         self._add_command_to_orders(action=ActionType.CLEAR_AND_SELECT, right=self.world.width,
                                                     bottom=self.world.height, group=IFV_GROUP)
-                        self._add_command_to_orders(action=ActionType.MOVE, x=0, y=74, next_delay=185)
+                        self._add_command_to_orders(action=ActionType.MOVE, x=0, y=74, next_delay=230)
                     if pos_unit['tank'] == 9:
                         self._add_command_to_orders(action=ActionType.CLEAR_AND_SELECT, right=self.world.width,
                                                     bottom=self.world.height, group=TANK_GROUP)
-                        self._add_command_to_orders(action=ActionType.MOVE, x=0, y=-74, next_delay=247)
+                        self._add_command_to_orders(action=ActionType.MOVE, x=0, y=-74, next_delay=300)
                     if pos_unit['arrv'] == 9:
                         self._add_command_to_orders(action=ActionType.CLEAR_AND_SELECT, right=self.world.width,
                                                     bottom=self.world.height, group=ARRV_GROUP)
-                        self._add_command_to_orders(action=ActionType.MOVE, x=0, y=-74, next_delay=185)
+                        self._add_command_to_orders(action=ActionType.MOVE, x=0, y=-74, next_delay=230)
                     if pos_unit['ifv'] == 9:
                         self._add_command_to_orders(action=ActionType.CLEAR_AND_SELECT, right=self.world.width,
                                                     bottom=self.world.height, group=IFV_GROUP)
-                        self._add_command_to_orders(action=ActionType.MOVE, x=0, y=-74, next_delay=185)
-                elif 3 in pos_units_ground and 7 in pos_units_ground:
+                        self._add_command_to_orders(action=ActionType.MOVE, x=0, y=-74, next_delay=230)
+                elif 3 in pos_units_ground.values() and 7 in pos_units_ground.values():
+                    if DEBUG:
+                        print('3 in pos_units_ground and 7 in pos_units_ground')
                     if pos_unit['tank'] == 3:
                         self._add_command_to_orders(action=ActionType.CLEAR_AND_SELECT, right=self.world.width,
                                                     bottom=self.world.height, group=TANK_GROUP)
-                        self._add_command_to_orders(action=ActionType.MOVE, x=0, y=74, next_delay=247)
+                        self._add_command_to_orders(action=ActionType.MOVE, x=0, y=74, next_delay=300)
                     if pos_unit['arrv'] == 3:
                         self._add_command_to_orders(action=ActionType.CLEAR_AND_SELECT, right=self.world.width,
                                                     bottom=self.world.height, group=ARRV_GROUP)
-                        self._add_command_to_orders(action=ActionType.MOVE, x=0, y=74, next_delay=185)
+                        self._add_command_to_orders(action=ActionType.MOVE, x=0, y=74, next_delay=230)
                     if pos_unit['ifv'] == 3:
                         self._add_command_to_orders(action=ActionType.CLEAR_AND_SELECT, right=self.world.width,
                                                     bottom=self.world.height, group=IFV_GROUP)
-                        self._add_command_to_orders(action=ActionType.MOVE, x=0, y=74, next_delay=185)
+                        self._add_command_to_orders(action=ActionType.MOVE, x=0, y=74, next_delay=230)
                     if pos_unit['tank'] == 7:
                         self._add_command_to_orders(action=ActionType.CLEAR_AND_SELECT, right=self.world.width,
                                                     bottom=self.world.height, group=TANK_GROUP)
-                        self._add_command_to_orders(action=ActionType.MOVE, x=74, y=0, next_delay=247)
-                        self._add_command_to_orders(action=ActionType.MOVE, x=0, y=-74, next_delay=247)
+                        self._add_command_to_orders(action=ActionType.MOVE, x=74, y=0, next_delay=300)
+                        self._add_command_to_orders(action=ActionType.MOVE, x=0, y=-74, next_delay=300)
                     if pos_unit['arrv'] == 7:
                         self._add_command_to_orders(action=ActionType.CLEAR_AND_SELECT, right=self.world.width,
                                                     bottom=self.world.height, group=ARRV_GROUP)
-                        self._add_command_to_orders(action=ActionType.MOVE, x=74, y=0, next_delay=185)
-                        self._add_command_to_orders(action=ActionType.MOVE, x=0, y=-74, next_delay=185)
+                        self._add_command_to_orders(action=ActionType.MOVE, x=74, y=0, next_delay=230)
+                        self._add_command_to_orders(action=ActionType.MOVE, x=0, y=-74, next_delay=230)
                     if pos_unit['ifv'] == 7:
                         self._add_command_to_orders(action=ActionType.CLEAR_AND_SELECT, right=self.world.width,
                                                     bottom=self.world.height, group=IFV_GROUP)
-                        self._add_command_to_orders(action=ActionType.MOVE, x=74, y=0, next_delay=185)
-                        self._add_command_to_orders(action=ActionType.MOVE, x=0, y=-74, next_delay=185)
-                elif 3 in pos_units_ground and 8 in pos_units_ground:
+                        self._add_command_to_orders(action=ActionType.MOVE, x=74, y=0, next_delay=230)
+                        self._add_command_to_orders(action=ActionType.MOVE, x=0, y=-74, next_delay=230)
+                elif 3 in pos_units_ground.values() and 8 in pos_units_ground.values():
+                    if DEBUG:
+                        print('3 in pos_units_ground and 8 in pos_units_ground')
                     if pos_unit['tank'] == 3:
                         self._add_command_to_orders(action=ActionType.CLEAR_AND_SELECT, right=self.world.width,
                                                     bottom=self.world.height, group=TANK_GROUP)
-                        self._add_command_to_orders(action=ActionType.MOVE, x=0, y=74, next_delay=247)
+                        self._add_command_to_orders(action=ActionType.MOVE, x=0, y=74, next_delay=300)
                     if pos_unit['arrv'] == 3:
                         self._add_command_to_orders(action=ActionType.CLEAR_AND_SELECT, right=self.world.width,
                                                     bottom=self.world.height, group=ARRV_GROUP)
-                        self._add_command_to_orders(action=ActionType.MOVE, x=0, y=74, next_delay=185)
+                        self._add_command_to_orders(action=ActionType.MOVE, x=0, y=74, next_delay=230)
                     if pos_unit['ifv'] == 3:
                         self._add_command_to_orders(action=ActionType.CLEAR_AND_SELECT, right=self.world.width,
                                                     bottom=self.world.height, group=IFV_GROUP)
-                        self._add_command_to_orders(action=ActionType.MOVE, x=0, y=74, next_delay=185)
+                        self._add_command_to_orders(action=ActionType.MOVE, x=0, y=74, next_delay=230)
                     if pos_unit['tank'] == 8:
                         self._add_command_to_orders(action=ActionType.CLEAR_AND_SELECT, right=self.world.width,
                                                     bottom=self.world.height, group=TANK_GROUP)
-                        self._add_command_to_orders(action=ActionType.MOVE, x=0, y=-74, next_delay=247)
+                        self._add_command_to_orders(action=ActionType.MOVE, x=0, y=-74, next_delay=300)
                     if pos_unit['arrv'] == 8:
                         self._add_command_to_orders(action=ActionType.CLEAR_AND_SELECT, right=self.world.width,
                                                     bottom=self.world.height, group=ARRV_GROUP)
-                        self._add_command_to_orders(action=ActionType.MOVE, x=0, y=-74, next_delay=185)
+                        self._add_command_to_orders(action=ActionType.MOVE, x=0, y=-74, next_delay=230)
                     if pos_unit['ifv'] == 8:
                         self._add_command_to_orders(action=ActionType.CLEAR_AND_SELECT, right=self.world.width,
                                                     bottom=self.world.height, group=IFV_GROUP)
-                        self._add_command_to_orders(action=ActionType.MOVE, x=0, y=-74, next_delay=185)
-                elif 3 in pos_units_ground and 9 in pos_units_ground:
+                        self._add_command_to_orders(action=ActionType.MOVE, x=0, y=-74, next_delay=230)
+                elif 3 in pos_units_ground.values() and 9 in pos_units_ground.values():
+                    if DEBUG:
+                        print('3 in pos_units_ground and 9 in pos_units_ground')
                     if pos_unit['tank'] == 3:
                         self._add_command_to_orders(action=ActionType.CLEAR_AND_SELECT, right=self.world.width,
                                                     bottom=self.world.height, group=TANK_GROUP)
-                        self._add_command_to_orders(action=ActionType.MOVE, x=0, y=74, next_delay=247)
+                        self._add_command_to_orders(action=ActionType.MOVE, x=0, y=74, next_delay=300)
                     if pos_unit['arrv'] == 3:
                         self._add_command_to_orders(action=ActionType.CLEAR_AND_SELECT, right=self.world.width,
                                                     bottom=self.world.height, group=ARRV_GROUP)
-                        self._add_command_to_orders(action=ActionType.MOVE, x=0, y=74, next_delay=185)
+                        self._add_command_to_orders(action=ActionType.MOVE, x=0, y=74, next_delay=230)
                     if pos_unit['ifv'] == 3:
                         self._add_command_to_orders(action=ActionType.CLEAR_AND_SELECT, right=self.world.width,
                                                     bottom=self.world.height, group=IFV_GROUP)
-                        self._add_command_to_orders(action=ActionType.MOVE, x=0, y=74, next_delay=185)
+                        self._add_command_to_orders(action=ActionType.MOVE, x=0, y=74, next_delay=230)
                     if pos_unit['tank'] == 9:
                         self._add_command_to_orders(action=ActionType.CLEAR_AND_SELECT, right=self.world.width,
                                                     bottom=self.world.height, group=TANK_GROUP)
-                        self._add_command_to_orders(action=ActionType.MOVE, x=-74, y=0, next_delay=247)
-                        self._add_command_to_orders(action=ActionType.MOVE, x=0, y=-74, next_delay=247)
+                        self._add_command_to_orders(action=ActionType.MOVE, x=-74, y=0, next_delay=300)
+                        self._add_command_to_orders(action=ActionType.MOVE, x=0, y=-74, next_delay=300)
                     if pos_unit['arrv'] == 9:
                         self._add_command_to_orders(action=ActionType.CLEAR_AND_SELECT, right=self.world.width,
                                                     bottom=self.world.height, group=ARRV_GROUP)
-                        self._add_command_to_orders(action=ActionType.MOVE, x=-74, y=0, next_delay=185)
-                        self._add_command_to_orders(action=ActionType.MOVE, x=0, y=-74, next_delay=185)
+                        self._add_command_to_orders(action=ActionType.MOVE, x=-74, y=0, next_delay=230)
+                        self._add_command_to_orders(action=ActionType.MOVE, x=0, y=-74, next_delay=230)
                     if pos_unit['ifv'] == 9:
                         self._add_command_to_orders(action=ActionType.CLEAR_AND_SELECT, right=self.world.width,
                                                     bottom=self.world.height, group=IFV_GROUP)
-                        self._add_command_to_orders(action=ActionType.MOVE, x=-74, y=0, next_delay=185)
-                        self._add_command_to_orders(action=ActionType.MOVE, x=0, y=-74, next_delay=185)
-                elif 7 in pos_units_ground and 8 in pos_units_ground:
+                        self._add_command_to_orders(action=ActionType.MOVE, x=-74, y=0, next_delay=230)
+                        self._add_command_to_orders(action=ActionType.MOVE, x=0, y=-74, next_delay=230)
+                elif 7 in pos_units_ground.values() and 8 in pos_units_ground.values():
+                    if DEBUG:
+                        print('7 in pos_units_ground and 8 in pos_units_ground')
                     if pos_unit['tank'] == 4:
                         self._add_command_to_orders(action=ActionType.CLEAR_AND_SELECT, right=self.world.width,
                                                     bottom=self.world.height, group=IFV_GROUP)
@@ -1006,611 +1413,655 @@ class TShirtBot:
                                                     bottom=self.world.height, group=TANK_GROUP)
                         self._add_command_to_orders(action=ActionType.ADD_TO_SELECTION, right=self.world.width,
                                                     bottom=self.world.height, group=ARRV_GROUP)
-                    self._add_command_to_orders(action=ActionType.MOVE, x=74, y=0, next_delay=247)
-                    self._add_command_to_orders(action=ActionType.MOVE, x=0, y=74, next_delay=247)
-                elif 7 in pos_units_ground and 9 in pos_units_ground:
+                    self._add_command_to_orders(action=ActionType.MOVE, x=74, y=0, next_delay=300)
+                    self._add_command_to_orders(action=ActionType.MOVE, x=0, y=-74, next_delay=300)
+                elif 7 in pos_units_ground.values() and 9 in pos_units_ground.values():
+                    if DEBUG:
+                        print('7 in pos_units_ground and 9 in pos_units_ground')
                     if pos_unit['tank'] == 7:
                         self._add_command_to_orders(action=ActionType.CLEAR_AND_SELECT, right=self.world.width,
                                                     bottom=self.world.height, group=TANK_GROUP)
-                        self._add_command_to_orders(action=ActionType.MOVE, x=74, y=0, next_delay=247)
-                        self._add_command_to_orders(action=ActionType.MOVE, x=0, y=-74, next_delay=247)
+                        self._add_command_to_orders(action=ActionType.MOVE, x=74, y=0, next_delay=300)
+                        self._add_command_to_orders(action=ActionType.MOVE, x=0, y=-74, next_delay=300)
                     if pos_unit['arrv'] == 7:
                         self._add_command_to_orders(action=ActionType.CLEAR_AND_SELECT, right=self.world.width,
                                                     bottom=self.world.height, group=ARRV_GROUP)
-                        self._add_command_to_orders(action=ActionType.MOVE, x=74, y=0, next_delay=185)
-                        self._add_command_to_orders(action=ActionType.MOVE, x=0, y=-74, next_delay=185)
+                        self._add_command_to_orders(action=ActionType.MOVE, x=74, y=0, next_delay=230)
+                        self._add_command_to_orders(action=ActionType.MOVE, x=0, y=-74, next_delay=230)
                     if pos_unit['ifv'] == 7:
                         self._add_command_to_orders(action=ActionType.CLEAR_AND_SELECT, right=self.world.width,
                                                     bottom=self.world.height, group=IFV_GROUP)
-                        self._add_command_to_orders(action=ActionType.MOVE, x=74, y=0, next_delay=185)
-                        self._add_command_to_orders(action=ActionType.MOVE, x=0, y=-74, next_delay=185)
+                        self._add_command_to_orders(action=ActionType.MOVE, x=74, y=0, next_delay=230)
+                        self._add_command_to_orders(action=ActionType.MOVE, x=0, y=-74, next_delay=230)
                     if pos_unit['tank'] == 9:
                         self._add_command_to_orders(action=ActionType.CLEAR_AND_SELECT, right=self.world.width,
                                                     bottom=self.world.height, group=TANK_GROUP)
-                        self._add_command_to_orders(action=ActionType.MOVE, x=0, y=-74, next_delay=247)
+                        self._add_command_to_orders(action=ActionType.MOVE, x=0, y=-74, next_delay=300)
                     if pos_unit['arrv'] == 9:
                         self._add_command_to_orders(action=ActionType.CLEAR_AND_SELECT, right=self.world.width,
                                                     bottom=self.world.height, group=ARRV_GROUP)
-                        self._add_command_to_orders(action=ActionType.MOVE, x=0, y=-74, next_delay=185)
+                        self._add_command_to_orders(action=ActionType.MOVE, x=0, y=-74, next_delay=230)
                     if pos_unit['ifv'] == 9:
                         self._add_command_to_orders(action=ActionType.CLEAR_AND_SELECT, right=self.world.width,
                                                     bottom=self.world.height, group=IFV_GROUP)
-                        self._add_command_to_orders(action=ActionType.MOVE, x=0, y=-74, next_delay=185)
-                elif 8 in pos_units_ground and 9 in pos_units_ground:
+                        self._add_command_to_orders(action=ActionType.MOVE, x=0, y=-74, next_delay=230)
+                elif 8 in pos_units_ground.values() and 9 in pos_units_ground.values():
+                    if DEBUG:
+                        print('8 in pos_units_ground and 9 in pos_units_ground')
                     if pos_unit['tank'] == 8:
                         self._add_command_to_orders(action=ActionType.CLEAR_AND_SELECT, right=self.world.width,
                                                     bottom=self.world.height, group=TANK_GROUP)
-                        self._add_command_to_orders(action=ActionType.MOVE, x=0, y=-74, next_delay=247)
+                        self._add_command_to_orders(action=ActionType.MOVE, x=0, y=-74, next_delay=300)
                     if pos_unit['arrv'] == 8:
                         self._add_command_to_orders(action=ActionType.CLEAR_AND_SELECT, right=self.world.width,
                                                     bottom=self.world.height, group=ARRV_GROUP)
-                        self._add_command_to_orders(action=ActionType.MOVE, x=0, y=-74, next_delay=185)
+                        self._add_command_to_orders(action=ActionType.MOVE, x=0, y=-74, next_delay=230)
                     if pos_unit['ifv'] == 8:
                         self._add_command_to_orders(action=ActionType.CLEAR_AND_SELECT, right=self.world.width,
                                                     bottom=self.world.height, group=IFV_GROUP)
-                        self._add_command_to_orders(action=ActionType.MOVE, x=0, y=-74, next_delay=185)
+                        self._add_command_to_orders(action=ActionType.MOVE, x=0, y=-74, next_delay=230)
                     if pos_unit['tank'] == 9:
                         self._add_command_to_orders(action=ActionType.CLEAR_AND_SELECT, right=self.world.width,
                                                     bottom=self.world.height, group=TANK_GROUP)
-                        self._add_command_to_orders(action=ActionType.MOVE, x=0, y=-74, next_delay=247)
+                        self._add_command_to_orders(action=ActionType.MOVE, x=0, y=-74, next_delay=300)
                     if pos_unit['arrv'] == 9:
                         self._add_command_to_orders(action=ActionType.CLEAR_AND_SELECT, right=self.world.width,
                                                     bottom=self.world.height, group=ARRV_GROUP)
-                        self._add_command_to_orders(action=ActionType.MOVE, x=0, y=-74, next_delay=185)
+                        self._add_command_to_orders(action=ActionType.MOVE, x=0, y=-74, next_delay=230)
                     if pos_unit['ifv'] == 9:
                         self._add_command_to_orders(action=ActionType.CLEAR_AND_SELECT, right=self.world.width,
                                                     bottom=self.world.height, group=IFV_GROUP)
-                        self._add_command_to_orders(action=ActionType.MOVE, x=0, y=-74, next_delay=185)
+                        self._add_command_to_orders(action=ActionType.MOVE, x=0, y=-74, next_delay=230)
 
-            elif 5 in pos_units_ground:
-                if 1 in pos_units_ground and 2 in pos_units_ground:
+            elif 5 in pos_units_ground.values():
+                if DEBUG:
+                    print('5 in pos_units_ground:')
+                if 1 in pos_units_ground.values() and 2 in pos_units_ground.values():
+                    if DEBUG:
+                        print('1 in pos_units_ground and 2 in pos_units_ground')
                     if pos_unit['tank'] == 1:
                         self._add_command_to_orders(action=ActionType.CLEAR_AND_SELECT, right=self.world.width,
                                                     bottom=self.world.height, group=TANK_GROUP)
-                        self._add_command_to_orders(action=ActionType.MOVE, x=0, y=74, next_delay=247)
+                        self._add_command_to_orders(action=ActionType.MOVE, x=0, y=74, next_delay=300)
                     if pos_unit['arrv'] == 1:
                         self._add_command_to_orders(action=ActionType.CLEAR_AND_SELECT, right=self.world.width,
                                                     bottom=self.world.height, group=ARRV_GROUP)
-                        self._add_command_to_orders(action=ActionType.MOVE, x=0, y=74, next_delay=185)
+                        self._add_command_to_orders(action=ActionType.MOVE, x=0, y=74, next_delay=230)
                     if pos_unit['ifv'] == 1:
                         self._add_command_to_orders(action=ActionType.CLEAR_AND_SELECT, right=self.world.width,
                                                     bottom=self.world.height, group=IFV_GROUP)
-                        self._add_command_to_orders(action=ActionType.MOVE, x=0, y=74, next_delay=185)
+                        self._add_command_to_orders(action=ActionType.MOVE, x=0, y=74, next_delay=230)
                     if pos_unit['tank'] == 2:
                         self._add_command_to_orders(action=ActionType.CLEAR_AND_SELECT, right=self.world.width,
                                                     bottom=self.world.height, group=TANK_GROUP)
-                        self._add_command_to_orders(action=ActionType.MOVE, x=74, y=0, next_delay=247)
-                        self._add_command_to_orders(action=ActionType.MOVE, x=0, y=74, next_delay=247)
+                        self._add_command_to_orders(action=ActionType.MOVE, x=74, y=0, next_delay=300)
+                        self._add_command_to_orders(action=ActionType.MOVE, x=0, y=74, next_delay=300)
                     if pos_unit['arrv'] == 2:
                         self._add_command_to_orders(action=ActionType.CLEAR_AND_SELECT, right=self.world.width,
                                                     bottom=self.world.height, group=ARRV_GROUP)
-                        self._add_command_to_orders(action=ActionType.MOVE, x=74, y=0, next_delay=185)
-                        self._add_command_to_orders(action=ActionType.MOVE, x=0, y=74, next_delay=185)
+                        self._add_command_to_orders(action=ActionType.MOVE, x=74, y=0, next_delay=230)
+                        self._add_command_to_orders(action=ActionType.MOVE, x=0, y=74, next_delay=230)
                     if pos_unit['ifv'] == 2:
                         self._add_command_to_orders(action=ActionType.CLEAR_AND_SELECT, right=self.world.width,
                                                     bottom=self.world.height, group=IFV_GROUP)
-                        self._add_command_to_orders(action=ActionType.MOVE, x=74, y=0, next_delay=185)
-                        self._add_command_to_orders(action=ActionType.MOVE, x=0, y=74, next_delay=185)
-                elif 1 in pos_units_ground and 3 in pos_units_ground:
+                        self._add_command_to_orders(action=ActionType.MOVE, x=74, y=0, next_delay=230)
+                        self._add_command_to_orders(action=ActionType.MOVE, x=0, y=74, next_delay=230)
+                elif 1 in pos_units_ground.values() and 3 in pos_units_ground.values():
+                    if DEBUG:
+                        print('1 in pos_units_ground and 3 in pos_units_ground')
                     if pos_unit['tank'] == 1:
                         self._add_command_to_orders(action=ActionType.CLEAR_AND_SELECT, right=self.world.width,
                                                     bottom=self.world.height, group=TANK_GROUP)
-                        self._add_command_to_orders(action=ActionType.MOVE, x=0, y=74, next_delay=247)
+                        self._add_command_to_orders(action=ActionType.MOVE, x=0, y=74, next_delay=300)
                     if pos_unit['arrv'] == 1:
                         self._add_command_to_orders(action=ActionType.CLEAR_AND_SELECT, right=self.world.width,
                                                     bottom=self.world.height, group=ARRV_GROUP)
-                        self._add_command_to_orders(action=ActionType.MOVE, x=0, y=74, next_delay=185)
+                        self._add_command_to_orders(action=ActionType.MOVE, x=0, y=74, next_delay=230)
                     if pos_unit['ifv'] == 1:
                         self._add_command_to_orders(action=ActionType.CLEAR_AND_SELECT, right=self.world.width,
                                                     bottom=self.world.height, group=IFV_GROUP)
-                        self._add_command_to_orders(action=ActionType.MOVE, x=0, y=74, next_delay=185)
+                        self._add_command_to_orders(action=ActionType.MOVE, x=0, y=74, next_delay=230)
                     if pos_unit['tank'] == 3:
                         self._add_command_to_orders(action=ActionType.CLEAR_AND_SELECT, right=self.world.width,
                                                     bottom=self.world.height, group=TANK_GROUP)
-                        self._add_command_to_orders(action=ActionType.MOVE, x=0, y=74, next_delay=247)
+                        self._add_command_to_orders(action=ActionType.MOVE, x=0, y=74, next_delay=300)
                     if pos_unit['arrv'] == 3:
                         self._add_command_to_orders(action=ActionType.CLEAR_AND_SELECT, right=self.world.width,
                                                     bottom=self.world.height, group=ARRV_GROUP)
-                        self._add_command_to_orders(action=ActionType.MOVE, x=0, y=74, next_delay=185)
+                        self._add_command_to_orders(action=ActionType.MOVE, x=0, y=74, next_delay=230)
                     if pos_unit['ifv'] == 3:
                         self._add_command_to_orders(action=ActionType.CLEAR_AND_SELECT, right=self.world.width,
                                                     bottom=self.world.height, group=IFV_GROUP)
-                        self._add_command_to_orders(action=ActionType.MOVE, x=0, y=74, next_delay=185)
-                elif 1 in pos_units_ground and 7 in pos_units_ground:
+                        self._add_command_to_orders(action=ActionType.MOVE, x=0, y=74, next_delay=230)
+                elif 1 in pos_units_ground.values() and 7 in pos_units_ground.values():
+                    if DEBUG:
+                        print('1 in pos_units_ground and 7 in pos_units_ground')
                     if pos_unit['tank'] == 1:
                         self._add_command_to_orders(action=ActionType.CLEAR_AND_SELECT, right=self.world.width,
                                                     bottom=self.world.height, group=TANK_GROUP)
-                        self._add_command_to_orders(action=ActionType.MOVE, x=0, y=74, next_delay=247)
+                        self._add_command_to_orders(action=ActionType.MOVE, x=0, y=74, next_delay=300)
                     if pos_unit['arrv'] == 1:
                         self._add_command_to_orders(action=ActionType.CLEAR_AND_SELECT, right=self.world.width,
                                                     bottom=self.world.height, group=ARRV_GROUP)
-                        self._add_command_to_orders(action=ActionType.MOVE, x=0, y=74, next_delay=185)
+                        self._add_command_to_orders(action=ActionType.MOVE, x=0, y=74, next_delay=230)
                     if pos_unit['ifv'] == 1:
                         self._add_command_to_orders(action=ActionType.CLEAR_AND_SELECT, right=self.world.width,
                                                     bottom=self.world.height, group=IFV_GROUP)
-                        self._add_command_to_orders(action=ActionType.MOVE, x=0, y=74, next_delay=185)
+                        self._add_command_to_orders(action=ActionType.MOVE, x=0, y=74, next_delay=230)
                     if pos_unit['tank'] == 7:
                         self._add_command_to_orders(action=ActionType.CLEAR_AND_SELECT, right=self.world.width,
                                                     bottom=self.world.height, group=TANK_GROUP)
-                        self._add_command_to_orders(action=ActionType.MOVE, x=148, y=0, next_delay=494)
-                        self._add_command_to_orders(action=ActionType.MOVE, x=0, y=-74, next_delay=247)
+                        self._add_command_to_orders(action=ActionType.MOVE, x=148, y=0, next_delay=550)
+                        self._add_command_to_orders(action=ActionType.MOVE, x=0, y=-74, next_delay=300)
                     if pos_unit['arrv'] == 7:
                         self._add_command_to_orders(action=ActionType.CLEAR_AND_SELECT, right=self.world.width,
                                                     bottom=self.world.height, group=ARRV_GROUP)
-                        self._add_command_to_orders(action=ActionType.MOVE, x=148, y=0, next_delay=370)
-                        self._add_command_to_orders(action=ActionType.MOVE, x=0, y=-74, next_delay=185)
+                        self._add_command_to_orders(action=ActionType.MOVE, x=148, y=0, next_delay=450)
+                        self._add_command_to_orders(action=ActionType.MOVE, x=0, y=-74, next_delay=230)
                     if pos_unit['ifv'] == 7:
                         self._add_command_to_orders(action=ActionType.CLEAR_AND_SELECT, right=self.world.width,
                                                     bottom=self.world.height, group=IFV_GROUP)
-                        self._add_command_to_orders(action=ActionType.MOVE, x=148, y=0, next_delay=370)
-                        self._add_command_to_orders(action=ActionType.MOVE, x=0, y=-74, next_delay=185)
-                elif 1 in pos_units_ground and 8 in pos_units_ground:
+                        self._add_command_to_orders(action=ActionType.MOVE, x=148, y=0, next_delay=450)
+                        self._add_command_to_orders(action=ActionType.MOVE, x=0, y=-74, next_delay=230)
+                elif 1 in pos_units_ground.values() and 8 in pos_units_ground.values():
+                    if DEBUG:
+                        print('1 in pos_units_ground and 8 in pos_units_ground')
                     if pos_unit['tank'] == 1:
                         self._add_command_to_orders(action=ActionType.CLEAR_AND_SELECT, right=self.world.width,
                                                     bottom=self.world.height, group=TANK_GROUP)
-                        self._add_command_to_orders(action=ActionType.MOVE, x=0, y=74, next_delay=247)
+                        self._add_command_to_orders(action=ActionType.MOVE, x=0, y=74, next_delay=300)
                     if pos_unit['arrv'] == 1:
                         self._add_command_to_orders(action=ActionType.CLEAR_AND_SELECT, right=self.world.width,
                                                     bottom=self.world.height, group=ARRV_GROUP)
-                        self._add_command_to_orders(action=ActionType.MOVE, x=0, y=74, next_delay=185)
+                        self._add_command_to_orders(action=ActionType.MOVE, x=0, y=74, next_delay=230)
                     if pos_unit['ifv'] == 1:
                         self._add_command_to_orders(action=ActionType.CLEAR_AND_SELECT, right=self.world.width,
                                                     bottom=self.world.height, group=IFV_GROUP)
-                        self._add_command_to_orders(action=ActionType.MOVE, x=0, y=74, next_delay=185)
+                        self._add_command_to_orders(action=ActionType.MOVE, x=0, y=74, next_delay=230)
                     if pos_unit['tank'] == 8:
                         self._add_command_to_orders(action=ActionType.CLEAR_AND_SELECT, right=self.world.width,
                                                     bottom=self.world.height, group=TANK_GROUP)
-                        self._add_command_to_orders(action=ActionType.MOVE, x=74, y=0, next_delay=247)
-                        self._add_command_to_orders(action=ActionType.MOVE, x=0, y=-74, next_delay=247)
+                        self._add_command_to_orders(action=ActionType.MOVE, x=74, y=0, next_delay=300)
+                        self._add_command_to_orders(action=ActionType.MOVE, x=0, y=-74, next_delay=300)
                     if pos_unit['arrv'] == 8:
                         self._add_command_to_orders(action=ActionType.CLEAR_AND_SELECT, right=self.world.width,
                                                     bottom=self.world.height, group=ARRV_GROUP)
-                        self._add_command_to_orders(action=ActionType.MOVE, x=74, y=0, next_delay=185)
-                        self._add_command_to_orders(action=ActionType.MOVE, x=0, y=-74, next_delay=185)
+                        self._add_command_to_orders(action=ActionType.MOVE, x=74, y=0, next_delay=230)
+                        self._add_command_to_orders(action=ActionType.MOVE, x=0, y=-74, next_delay=230)
                     if pos_unit['ifv'] == 8:
                         self._add_command_to_orders(action=ActionType.CLEAR_AND_SELECT, right=self.world.width,
                                                     bottom=self.world.height, group=IFV_GROUP)
-                        self._add_command_to_orders(action=ActionType.MOVE, x=74, y=0, next_delay=185)
-                        self._add_command_to_orders(action=ActionType.MOVE, x=0, y=-74, next_delay=185)
-                elif 1 in pos_units_ground and 9 in pos_units_ground:
+                        self._add_command_to_orders(action=ActionType.MOVE, x=74, y=0, next_delay=230)
+                        self._add_command_to_orders(action=ActionType.MOVE, x=0, y=-74, next_delay=230)
+                elif 1 in pos_units_ground.values() and 9 in pos_units_ground.values():
+                    if DEBUG:
+                        print('1 in pos_units_ground and 9 in pos_units_ground')
                     if pos_unit['tank'] == 1:
                         self._add_command_to_orders(action=ActionType.CLEAR_AND_SELECT, right=self.world.width,
                                                     bottom=self.world.height, group=TANK_GROUP)
-                        self._add_command_to_orders(action=ActionType.MOVE, x=0, y=74, next_delay=247)
+                        self._add_command_to_orders(action=ActionType.MOVE, x=0, y=74, next_delay=300)
                     if pos_unit['arrv'] == 1:
                         self._add_command_to_orders(action=ActionType.CLEAR_AND_SELECT, right=self.world.width,
                                                     bottom=self.world.height, group=ARRV_GROUP)
-                        self._add_command_to_orders(action=ActionType.MOVE, x=0, y=74, next_delay=185)
+                        self._add_command_to_orders(action=ActionType.MOVE, x=0, y=74, next_delay=230)
                     if pos_unit['ifv'] == 1:
                         self._add_command_to_orders(action=ActionType.CLEAR_AND_SELECT, right=self.world.width,
                                                     bottom=self.world.height, group=IFV_GROUP)
-                        self._add_command_to_orders(action=ActionType.MOVE, x=0, y=74, next_delay=185)
+                        self._add_command_to_orders(action=ActionType.MOVE, x=0, y=74, next_delay=230)
                     if pos_unit['tank'] == 9:
                         self._add_command_to_orders(action=ActionType.CLEAR_AND_SELECT, right=self.world.width,
                                                     bottom=self.world.height, group=TANK_GROUP)
-                        self._add_command_to_orders(action=ActionType.MOVE, x=0, y=-74, next_delay=247)
+                        self._add_command_to_orders(action=ActionType.MOVE, x=0, y=-74, next_delay=300)
                     if pos_unit['arrv'] == 9:
                         self._add_command_to_orders(action=ActionType.CLEAR_AND_SELECT, right=self.world.width,
                                                     bottom=self.world.height, group=ARRV_GROUP)
-                        self._add_command_to_orders(action=ActionType.MOVE, x=0, y=-74, next_delay=185)
+                        self._add_command_to_orders(action=ActionType.MOVE, x=0, y=-74, next_delay=230)
                     if pos_unit['ifv'] == 9:
                         self._add_command_to_orders(action=ActionType.CLEAR_AND_SELECT, right=self.world.width,
                                                     bottom=self.world.height, group=IFV_GROUP)
-                        self._add_command_to_orders(action=ActionType.MOVE, x=0, y=-74, next_delay=185)
-                elif 2 in pos_units_ground and 3 in pos_units_ground:
+                        self._add_command_to_orders(action=ActionType.MOVE, x=0, y=-74, next_delay=230)
+                elif 2 in pos_units_ground.values() and 3 in pos_units_ground.values():
+                    if DEBUG:
+                        print('2 in pos_units_ground and 3 in pos_units_ground')
                     if pos_unit['tank'] == 2:
                         self._add_command_to_orders(action=ActionType.CLEAR_AND_SELECT, right=self.world.width,
                                                     bottom=self.world.height, group=TANK_GROUP)
-                        self._add_command_to_orders(action=ActionType.MOVE, x=-74, y=0, next_delay=247)
-                        self._add_command_to_orders(action=ActionType.MOVE, x=0, y=74, next_delay=247)
+                        self._add_command_to_orders(action=ActionType.MOVE, x=-74, y=0, next_delay=300)
+                        self._add_command_to_orders(action=ActionType.MOVE, x=0, y=74, next_delay=300)
                     if pos_unit['arrv'] == 2:
                         self._add_command_to_orders(action=ActionType.CLEAR_AND_SELECT, right=self.world.width,
                                                     bottom=self.world.height, group=ARRV_GROUP)
-                        self._add_command_to_orders(action=ActionType.MOVE, x=-74, y=0, next_delay=185)
-                        self._add_command_to_orders(action=ActionType.MOVE, x=0, y=74, next_delay=185)
+                        self._add_command_to_orders(action=ActionType.MOVE, x=-74, y=0, next_delay=230)
+                        self._add_command_to_orders(action=ActionType.MOVE, x=0, y=74, next_delay=230)
                     if pos_unit['ifv'] == 2:
                         self._add_command_to_orders(action=ActionType.CLEAR_AND_SELECT, right=self.world.width,
                                                     bottom=self.world.height, group=IFV_GROUP)
-                        self._add_command_to_orders(action=ActionType.MOVE, x=-74, y=0, next_delay=185)
-                        self._add_command_to_orders(action=ActionType.MOVE, x=0, y=74, next_delay=185)
+                        self._add_command_to_orders(action=ActionType.MOVE, x=-74, y=0, next_delay=230)
+                        self._add_command_to_orders(action=ActionType.MOVE, x=0, y=74, next_delay=230)
                     if pos_unit['tank'] == 3:
                         self._add_command_to_orders(action=ActionType.CLEAR_AND_SELECT, right=self.world.width,
                                                     bottom=self.world.height, group=TANK_GROUP)
-                        self._add_command_to_orders(action=ActionType.MOVE, x=0, y=74, next_delay=247)
+                        self._add_command_to_orders(action=ActionType.MOVE, x=0, y=74, next_delay=300)
                     if pos_unit['arrv'] == 3:
                         self._add_command_to_orders(action=ActionType.CLEAR_AND_SELECT, right=self.world.width,
                                                     bottom=self.world.height, group=ARRV_GROUP)
-                        self._add_command_to_orders(action=ActionType.MOVE, x=0, y=74, next_delay=185)
+                        self._add_command_to_orders(action=ActionType.MOVE, x=0, y=74, next_delay=230)
                     if pos_unit['ifv'] == 3:
                         self._add_command_to_orders(action=ActionType.CLEAR_AND_SELECT, right=self.world.width,
                                                     bottom=self.world.height, group=IFV_GROUP)
-                        self._add_command_to_orders(action=ActionType.MOVE, x=0, y=74, next_delay=185)
-                elif 2 in pos_units_ground and 7 in pos_units_ground:
+                        self._add_command_to_orders(action=ActionType.MOVE, x=0, y=74, next_delay=230)
+                elif 2 in pos_units_ground.values() and 7 in pos_units_ground.values():
+                    if DEBUG:
+                        print('2 in pos_units_ground and 7 in pos_units_ground')
                     if pos_unit['tank'] == 2:
                         self._add_command_to_orders(action=ActionType.CLEAR_AND_SELECT, right=self.world.width,
                                                     bottom=self.world.height, group=TANK_GROUP)
-                        self._add_command_to_orders(action=ActionType.MOVE, x=74, y=0, next_delay=247)
-                        self._add_command_to_orders(action=ActionType.MOVE, x=0, y=74, next_delay=247)
+                        self._add_command_to_orders(action=ActionType.MOVE, x=74, y=0, next_delay=300)
+                        self._add_command_to_orders(action=ActionType.MOVE, x=0, y=74, next_delay=300)
                     if pos_unit['arrv'] == 2:
                         self._add_command_to_orders(action=ActionType.CLEAR_AND_SELECT, right=self.world.width,
                                                     bottom=self.world.height, group=ARRV_GROUP)
-                        self._add_command_to_orders(action=ActionType.MOVE, x=74, y=0, next_delay=185)
-                        self._add_command_to_orders(action=ActionType.MOVE, x=0, y=74, next_delay=185)
+                        self._add_command_to_orders(action=ActionType.MOVE, x=74, y=0, next_delay=230)
+                        self._add_command_to_orders(action=ActionType.MOVE, x=0, y=74, next_delay=230)
                     if pos_unit['ifv'] == 2:
                         self._add_command_to_orders(action=ActionType.CLEAR_AND_SELECT, right=self.world.width,
                                                     bottom=self.world.height, group=IFV_GROUP)
-                        self._add_command_to_orders(action=ActionType.MOVE, x=74, y=0, next_delay=185)
-                        self._add_command_to_orders(action=ActionType.MOVE, x=0, y=74, next_delay=185)
-                    if pos_unit['tank'] == 3:
+                        self._add_command_to_orders(action=ActionType.MOVE, x=74, y=0, next_delay=230)
+                        self._add_command_to_orders(action=ActionType.MOVE, x=0, y=74, next_delay=230)
+                    if pos_unit['tank'] == 7:
                         self._add_command_to_orders(action=ActionType.CLEAR_AND_SELECT, right=self.world.width,
                                                     bottom=self.world.height, group=TANK_GROUP)
-                        self._add_command_to_orders(action=ActionType.MOVE, x=0, y=-74, next_delay=247)
-                    if pos_unit['arrv'] == 3:
+                        self._add_command_to_orders(action=ActionType.MOVE, x=0, y=-74, next_delay=300)
+                    if pos_unit['arrv'] == 7:
                         self._add_command_to_orders(action=ActionType.CLEAR_AND_SELECT, right=self.world.width,
                                                     bottom=self.world.height, group=ARRV_GROUP)
-                        self._add_command_to_orders(action=ActionType.MOVE, x=0, y=-74, next_delay=185)
-                    if pos_unit['ifv'] == 3:
+                        self._add_command_to_orders(action=ActionType.MOVE, x=0, y=-74, next_delay=230)
+                    if pos_unit['ifv'] == 7:
                         self._add_command_to_orders(action=ActionType.CLEAR_AND_SELECT, right=self.world.width,
                                                     bottom=self.world.height, group=IFV_GROUP)
-                        self._add_command_to_orders(action=ActionType.MOVE, x=0, y=-74, next_delay=185)
-                elif 2 in pos_units_ground and 8 in pos_units_ground:
+                        self._add_command_to_orders(action=ActionType.MOVE, x=0, y=-74, next_delay=230)
+                elif 2 in pos_units_ground.values() and 8 in pos_units_ground.values():
+                    if DEBUG:
+                        print('2 in pos_units_ground and 8 in pos_units_ground')
                     if pos_unit['tank'] == 2:
                         self._add_command_to_orders(action=ActionType.CLEAR_AND_SELECT, right=self.world.width,
                                                     bottom=self.world.height, group=TANK_GROUP)
-                        self._add_command_to_orders(action=ActionType.MOVE, x=74, y=0, next_delay=247)
-                        self._add_command_to_orders(action=ActionType.MOVE, x=0, y=74, next_delay=247)
+                        self._add_command_to_orders(action=ActionType.MOVE, x=74, y=0, next_delay=300)
+                        self._add_command_to_orders(action=ActionType.MOVE, x=0, y=74, next_delay=300)
                     if pos_unit['arrv'] == 2:
                         self._add_command_to_orders(action=ActionType.CLEAR_AND_SELECT, right=self.world.width,
                                                     bottom=self.world.height, group=ARRV_GROUP)
-                        self._add_command_to_orders(action=ActionType.MOVE, x=74, y=0, next_delay=185)
-                        self._add_command_to_orders(action=ActionType.MOVE, x=0, y=74, next_delay=185)
+                        self._add_command_to_orders(action=ActionType.MOVE, x=74, y=0, next_delay=230)
+                        self._add_command_to_orders(action=ActionType.MOVE, x=0, y=74, next_delay=230)
                     if pos_unit['ifv'] == 2:
                         self._add_command_to_orders(action=ActionType.CLEAR_AND_SELECT, right=self.world.width,
                                                     bottom=self.world.height, group=IFV_GROUP)
-                        self._add_command_to_orders(action=ActionType.MOVE, x=74, y=0, next_delay=185)
-                        self._add_command_to_orders(action=ActionType.MOVE, x=0, y=74, next_delay=185)
+                        self._add_command_to_orders(action=ActionType.MOVE, x=74, y=0, next_delay=230)
+                        self._add_command_to_orders(action=ActionType.MOVE, x=0, y=74, next_delay=230)
                     if pos_unit['tank'] == 8:
                         self._add_command_to_orders(action=ActionType.CLEAR_AND_SELECT, right=self.world.width,
                                                     bottom=self.world.height, group=TANK_GROUP)
-                        self._add_command_to_orders(action=ActionType.MOVE, x=-74, y=0, next_delay=247)
-                        self._add_command_to_orders(action=ActionType.MOVE, x=0, y=-74, next_delay=247)
+                        self._add_command_to_orders(action=ActionType.MOVE, x=-74, y=0, next_delay=300)
+                        self._add_command_to_orders(action=ActionType.MOVE, x=0, y=-74, next_delay=300)
                     if pos_unit['arrv'] == 8:
                         self._add_command_to_orders(action=ActionType.CLEAR_AND_SELECT, right=self.world.width,
                                                     bottom=self.world.height, group=ARRV_GROUP)
-                        self._add_command_to_orders(action=ActionType.MOVE, x=-74, y=0, next_delay=185)
-                        self._add_command_to_orders(action=ActionType.MOVE, x=0, y=-74, next_delay=185)
+                        self._add_command_to_orders(action=ActionType.MOVE, x=-74, y=0, next_delay=230)
+                        self._add_command_to_orders(action=ActionType.MOVE, x=0, y=-74, next_delay=230)
                     if pos_unit['ifv'] == 8:
                         self._add_command_to_orders(action=ActionType.CLEAR_AND_SELECT, right=self.world.width,
                                                     bottom=self.world.height, group=IFV_GROUP)
-                        self._add_command_to_orders(action=ActionType.MOVE, x=-74, y=0, next_delay=185)
-                        self._add_command_to_orders(action=ActionType.MOVE, x=0, y=-74, next_delay=185)
-                elif 2 in pos_units_ground and 9 in pos_units_ground:
+                        self._add_command_to_orders(action=ActionType.MOVE, x=-74, y=0, next_delay=230)
+                        self._add_command_to_orders(action=ActionType.MOVE, x=0, y=-74, next_delay=230)
+                elif 2 in pos_units_ground.values() and 9 in pos_units_ground.values():
+                    if DEBUG:
+                        print('2 in pos_units_ground and 9 in pos_units_ground')
                     if pos_unit['tank'] == 2:
                         self._add_command_to_orders(action=ActionType.CLEAR_AND_SELECT, right=self.world.width,
                                                     bottom=self.world.height, group=TANK_GROUP)
-                        self._add_command_to_orders(action=ActionType.MOVE, x=-74, y=0, next_delay=247)
-                        self._add_command_to_orders(action=ActionType.MOVE, x=0, y=74, next_delay=247)
+                        self._add_command_to_orders(action=ActionType.MOVE, x=-74, y=0, next_delay=300)
+                        self._add_command_to_orders(action=ActionType.MOVE, x=0, y=74, next_delay=300)
                     if pos_unit['arrv'] == 2:
                         self._add_command_to_orders(action=ActionType.CLEAR_AND_SELECT, right=self.world.width,
                                                     bottom=self.world.height, group=ARRV_GROUP)
-                        self._add_command_to_orders(action=ActionType.MOVE, x=-74, y=0, next_delay=185)
-                        self._add_command_to_orders(action=ActionType.MOVE, x=0, y=74, next_delay=185)
+                        self._add_command_to_orders(action=ActionType.MOVE, x=-74, y=0, next_delay=230)
+                        self._add_command_to_orders(action=ActionType.MOVE, x=0, y=74, next_delay=230)
                     if pos_unit['ifv'] == 2:
                         self._add_command_to_orders(action=ActionType.CLEAR_AND_SELECT, right=self.world.width,
                                                     bottom=self.world.height, group=IFV_GROUP)
-                        self._add_command_to_orders(action=ActionType.MOVE, x=-74, y=0, next_delay=185)
-                        self._add_command_to_orders(action=ActionType.MOVE, x=0, y=74, next_delay=185)
+                        self._add_command_to_orders(action=ActionType.MOVE, x=-74, y=0, next_delay=230)
+                        self._add_command_to_orders(action=ActionType.MOVE, x=0, y=74, next_delay=230)
                     if pos_unit['tank'] == 9:
                         self._add_command_to_orders(action=ActionType.CLEAR_AND_SELECT, right=self.world.width,
                                                     bottom=self.world.height, group=TANK_GROUP)
-                        self._add_command_to_orders(action=ActionType.MOVE, x=0, y=-74, next_delay=247)
+                        self._add_command_to_orders(action=ActionType.MOVE, x=0, y=-74, next_delay=300)
                     if pos_unit['arrv'] == 9:
                         self._add_command_to_orders(action=ActionType.CLEAR_AND_SELECT, right=self.world.width,
                                                     bottom=self.world.height, group=ARRV_GROUP)
-                        self._add_command_to_orders(action=ActionType.MOVE, x=0, y=-74, next_delay=185)
+                        self._add_command_to_orders(action=ActionType.MOVE, x=0, y=-74, next_delay=230)
                     if pos_unit['ifv'] == 9:
                         self._add_command_to_orders(action=ActionType.CLEAR_AND_SELECT, right=self.world.width,
                                                     bottom=self.world.height, group=IFV_GROUP)
-                        self._add_command_to_orders(action=ActionType.MOVE, x=0, y=-74, next_delay=185)
-                elif 3 in pos_units_ground and 7 in pos_units_ground:
+                        self._add_command_to_orders(action=ActionType.MOVE, x=0, y=-74, next_delay=230)
+                elif 3 in pos_units_ground.values() and 7 in pos_units_ground.values():
+                    if DEBUG:
+                        print('3 in pos_units_ground and 7 in pos_units_ground')
                     if pos_unit['tank'] == 3:
                         self._add_command_to_orders(action=ActionType.CLEAR_AND_SELECT, right=self.world.width,
                                                     bottom=self.world.height, group=TANK_GROUP)
-                        self._add_command_to_orders(action=ActionType.MOVE, x=0, y=74, next_delay=247)
+                        self._add_command_to_orders(action=ActionType.MOVE, x=0, y=74, next_delay=300)
                     if pos_unit['arrv'] == 3:
                         self._add_command_to_orders(action=ActionType.CLEAR_AND_SELECT, right=self.world.width,
                                                     bottom=self.world.height, group=ARRV_GROUP)
-                        self._add_command_to_orders(action=ActionType.MOVE, x=0, y=74, next_delay=185)
+                        self._add_command_to_orders(action=ActionType.MOVE, x=0, y=74, next_delay=230)
                     if pos_unit['ifv'] == 3:
                         self._add_command_to_orders(action=ActionType.CLEAR_AND_SELECT, right=self.world.width,
                                                     bottom=self.world.height, group=IFV_GROUP)
-                        self._add_command_to_orders(action=ActionType.MOVE, x=0, y=74, next_delay=185)
+                        self._add_command_to_orders(action=ActionType.MOVE, x=0, y=74, next_delay=230)
                     if pos_unit['tank'] == 7:
                         self._add_command_to_orders(action=ActionType.CLEAR_AND_SELECT, right=self.world.width,
                                                     bottom=self.world.height, group=TANK_GROUP)
-                        self._add_command_to_orders(action=ActionType.MOVE, x=0, y=-74, next_delay=247)
+                        self._add_command_to_orders(action=ActionType.MOVE, x=0, y=-74, next_delay=300)
                     if pos_unit['arrv'] == 7:
                         self._add_command_to_orders(action=ActionType.CLEAR_AND_SELECT, right=self.world.width,
                                                     bottom=self.world.height, group=ARRV_GROUP)
-                        self._add_command_to_orders(action=ActionType.MOVE, x=0, y=-74, next_delay=185)
+                        self._add_command_to_orders(action=ActionType.MOVE, x=0, y=-74, next_delay=230)
                     if pos_unit['ifv'] == 7:
                         self._add_command_to_orders(action=ActionType.CLEAR_AND_SELECT, right=self.world.width,
                                                     bottom=self.world.height, group=IFV_GROUP)
-                        self._add_command_to_orders(action=ActionType.MOVE, x=0, y=-74, next_delay=185)
-                elif 3 in pos_units_ground and 8 in pos_units_ground:
+                        self._add_command_to_orders(action=ActionType.MOVE, x=0, y=-74, next_delay=230)
+                elif 3 in pos_units_ground.values() and 8 in pos_units_ground.values():
+                    if DEBUG:
+                        print('3 in pos_units_ground and 8 in pos_units_ground')
                     if pos_unit['tank'] == 3:
                         self._add_command_to_orders(action=ActionType.CLEAR_AND_SELECT, right=self.world.width,
                                                     bottom=self.world.height, group=TANK_GROUP)
-                        self._add_command_to_orders(action=ActionType.MOVE, x=0, y=74, next_delay=247)
+                        self._add_command_to_orders(action=ActionType.MOVE, x=0, y=74, next_delay=300)
                     if pos_unit['arrv'] == 3:
                         self._add_command_to_orders(action=ActionType.CLEAR_AND_SELECT, right=self.world.width,
                                                     bottom=self.world.height, group=ARRV_GROUP)
-                        self._add_command_to_orders(action=ActionType.MOVE, x=0, y=74, next_delay=185)
+                        self._add_command_to_orders(action=ActionType.MOVE, x=0, y=74, next_delay=230)
                     if pos_unit['ifv'] == 3:
                         self._add_command_to_orders(action=ActionType.CLEAR_AND_SELECT, right=self.world.width,
                                                     bottom=self.world.height, group=IFV_GROUP)
-                        self._add_command_to_orders(action=ActionType.MOVE, x=0, y=74, next_delay=185)
+                        self._add_command_to_orders(action=ActionType.MOVE, x=0, y=74, next_delay=230)
                     if pos_unit['tank'] == 8:
                         self._add_command_to_orders(action=ActionType.CLEAR_AND_SELECT, right=self.world.width,
                                                     bottom=self.world.height, group=TANK_GROUP)
-                        self._add_command_to_orders(action=ActionType.MOVE, x=-74, y=0, next_delay=247)
-                        self._add_command_to_orders(action=ActionType.MOVE, x=0, y=-74, next_delay=247)
+                        self._add_command_to_orders(action=ActionType.MOVE, x=-74, y=0, next_delay=300)
+                        self._add_command_to_orders(action=ActionType.MOVE, x=0, y=-74, next_delay=300)
                     if pos_unit['arrv'] == 8:
                         self._add_command_to_orders(action=ActionType.CLEAR_AND_SELECT, right=self.world.width,
                                                     bottom=self.world.height, group=ARRV_GROUP)
-                        self._add_command_to_orders(action=ActionType.MOVE, x=-74, y=0, next_delay=185)
-                        self._add_command_to_orders(action=ActionType.MOVE, x=0, y=-74, next_delay=185)
+                        self._add_command_to_orders(action=ActionType.MOVE, x=-74, y=0, next_delay=230)
+                        self._add_command_to_orders(action=ActionType.MOVE, x=0, y=-74, next_delay=230)
                     if pos_unit['ifv'] == 8:
                         self._add_command_to_orders(action=ActionType.CLEAR_AND_SELECT, right=self.world.width,
                                                     bottom=self.world.height, group=IFV_GROUP)
-                        self._add_command_to_orders(action=ActionType.MOVE, x=-74, y=0, next_delay=185)
-                        self._add_command_to_orders(action=ActionType.MOVE, x=0, y=-74, next_delay=185)
-                elif 3 in pos_units_ground and 9 in pos_units_ground:
+                        self._add_command_to_orders(action=ActionType.MOVE, x=-74, y=0, next_delay=230)
+                        self._add_command_to_orders(action=ActionType.MOVE, x=0, y=-74, next_delay=230)
+                elif 3 in pos_units_ground.values() and 9 in pos_units_ground.values():
+                    if DEBUG:
+                        print('3 in pos_units_ground and 9 in pos_units_ground')
                     if pos_unit['tank'] == 3:
-                        self._add_command_to_orders(action=ActionType.CLEAR_AND_SELECT, right=self.world.width,
-                                                    bottom=self.world.height, group=TANK_GROUP)
-                        self._add_command_to_orders(action=ActionType.MOVE, x=0, y=74, next_delay=247)
+                        self._add_command_to_orders(action=ActionType.CLEAR_AND_SELECT, group=TANK_GROUP)
+                        self._add_command_to_orders(action=ActionType.MOVE, x=0, y=74, next_delay=300)
                     if pos_unit['arrv'] == 3:
-                        self._add_command_to_orders(action=ActionType.CLEAR_AND_SELECT, right=self.world.width,
-                                                    bottom=self.world.height, group=ARRV_GROUP)
-                        self._add_command_to_orders(action=ActionType.MOVE, x=0, y=74, next_delay=185)
+                        self._add_command_to_orders(action=ActionType.CLEAR_AND_SELECT, group=ARRV_GROUP)
+                        self._add_command_to_orders(action=ActionType.MOVE, x=0, y=74, next_delay=230)
                     if pos_unit['ifv'] == 3:
-                        self._add_command_to_orders(action=ActionType.CLEAR_AND_SELECT, right=self.world.width,
-                                                    bottom=self.world.height, group=IFV_GROUP)
-                        self._add_command_to_orders(action=ActionType.MOVE, x=0, y=74, next_delay=185)
+                        self._add_command_to_orders(action=ActionType.CLEAR_AND_SELECT, group=IFV_GROUP)
+                        self._add_command_to_orders(action=ActionType.MOVE, x=0, y=74, next_delay=230)
                     if pos_unit['tank'] == 9:
-                        self._add_command_to_orders(action=ActionType.CLEAR_AND_SELECT, right=self.world.width,
-                                                    bottom=self.world.height, group=TANK_GROUP)
-                        self._add_command_to_orders(action=ActionType.MOVE, x=-148, y=0, next_delay=494)
-                        self._add_command_to_orders(action=ActionType.MOVE, x=0, y=-74, next_delay=247)
+                        self._add_command_to_orders(action=ActionType.CLEAR_AND_SELECT, group=TANK_GROUP)
+                        self._add_command_to_orders(action=ActionType.MOVE, x=-148, y=0, next_delay=550)
+                        self._add_command_to_orders(action=ActionType.MOVE, x=0, y=-74, next_delay=300)
                     if pos_unit['arrv'] == 9:
-                        self._add_command_to_orders(action=ActionType.CLEAR_AND_SELECT, right=self.world.width,
-                                                    bottom=self.world.height, group=ARRV_GROUP)
-                        self._add_command_to_orders(action=ActionType.MOVE, x=-148, y=0, next_delay=370)
-                        self._add_command_to_orders(action=ActionType.MOVE, x=0, y=-74, next_delay=185)
+                        self._add_command_to_orders(action=ActionType.CLEAR_AND_SELECT, group=ARRV_GROUP)
+                        self._add_command_to_orders(action=ActionType.MOVE, x=-148, y=0, next_delay=450)
+                        self._add_command_to_orders(action=ActionType.MOVE, x=0, y=-74, next_delay=230)
                     if pos_unit['ifv'] == 9:
-                        self._add_command_to_orders(action=ActionType.CLEAR_AND_SELECT, right=self.world.width,
-                                                    bottom=self.world.height, group=IFV_GROUP)
-                        self._add_command_to_orders(action=ActionType.MOVE, x=-148, y=0, next_delay=370)
-                        self._add_command_to_orders(action=ActionType.MOVE, x=0, y=-74, next_delay=185)
-                elif 7 in pos_units_ground and 8 in pos_units_ground:
+                        self._add_command_to_orders(action=ActionType.CLEAR_AND_SELECT, group=IFV_GROUP)
+                        self._add_command_to_orders(action=ActionType.MOVE, x=-148, y=0, next_delay=450)
+                        self._add_command_to_orders(action=ActionType.MOVE, x=0, y=-74, next_delay=230)
+                elif 7 in pos_units_ground.values() and 8 in pos_units_ground.values():
+                    if DEBUG:
+                        print('7 in pos_units_ground and 8 in pos_units_ground')
                     if pos_unit['tank'] == 7:
                         self._add_command_to_orders(action=ActionType.CLEAR_AND_SELECT, right=self.world.width,
                                                     bottom=self.world.height, group=TANK_GROUP)
-                        self._add_command_to_orders(action=ActionType.MOVE, x=0, y=-74, next_delay=247)
+                        self._add_command_to_orders(action=ActionType.MOVE, x=0, y=-74, next_delay=300)
                     if pos_unit['arrv'] == 7:
                         self._add_command_to_orders(action=ActionType.CLEAR_AND_SELECT, right=self.world.width,
                                                     bottom=self.world.height, group=ARRV_GROUP)
-                        self._add_command_to_orders(action=ActionType.MOVE, x=0, y=-74, next_delay=185)
+                        self._add_command_to_orders(action=ActionType.MOVE, x=0, y=-74, next_delay=230)
                     if pos_unit['ifv'] == 7:
                         self._add_command_to_orders(action=ActionType.CLEAR_AND_SELECT, right=self.world.width,
                                                     bottom=self.world.height, group=IFV_GROUP)
-                        self._add_command_to_orders(action=ActionType.MOVE, x=0, y=-74, next_delay=185)
+                        self._add_command_to_orders(action=ActionType.MOVE, x=0, y=-74, next_delay=230)
                     if pos_unit['tank'] == 8:
                         self._add_command_to_orders(action=ActionType.CLEAR_AND_SELECT, right=self.world.width,
                                                     bottom=self.world.height, group=TANK_GROUP)
-                        self._add_command_to_orders(action=ActionType.MOVE, x=74, y=0, next_delay=247)
-                        self._add_command_to_orders(action=ActionType.MOVE, x=0, y=-74, next_delay=247)
+                        self._add_command_to_orders(action=ActionType.MOVE, x=74, y=0, next_delay=300)
+                        self._add_command_to_orders(action=ActionType.MOVE, x=0, y=-74, next_delay=300)
                     if pos_unit['arrv'] == 8:
                         self._add_command_to_orders(action=ActionType.CLEAR_AND_SELECT, right=self.world.width,
                                                     bottom=self.world.height, group=ARRV_GROUP)
-                        self._add_command_to_orders(action=ActionType.MOVE, x=74, y=0, next_delay=185)
-                        self._add_command_to_orders(action=ActionType.MOVE, x=0, y=-74, next_delay=185)
+                        self._add_command_to_orders(action=ActionType.MOVE, x=74, y=0, next_delay=230)
+                        self._add_command_to_orders(action=ActionType.MOVE, x=0, y=-74, next_delay=230)
                     if pos_unit['ifv'] == 8:
                         self._add_command_to_orders(action=ActionType.CLEAR_AND_SELECT, right=self.world.width,
                                                     bottom=self.world.height, group=IFV_GROUP)
-                        self._add_command_to_orders(action=ActionType.MOVE, x=74, y=0, next_delay=185)
-                        self._add_command_to_orders(action=ActionType.MOVE, x=0, y=-74, next_delay=185)
-                elif 7 in pos_units_ground and 9 in pos_units_ground:
+                        self._add_command_to_orders(action=ActionType.MOVE, x=74, y=0, next_delay=230)
+                        self._add_command_to_orders(action=ActionType.MOVE, x=0, y=-74, next_delay=230)
+                elif 7 in pos_units_ground.values() and 9 in pos_units_ground.values():
+                    if DEBUG:
+                        print('7 in pos_units_ground and 9 in pos_units_ground')
                     if pos_unit['tank'] == 7:
                         self._add_command_to_orders(action=ActionType.CLEAR_AND_SELECT, right=self.world.width,
                                                     bottom=self.world.height, group=TANK_GROUP)
-                        self._add_command_to_orders(action=ActionType.MOVE, x=0, y=-74, next_delay=247)
+                        self._add_command_to_orders(action=ActionType.MOVE, x=0, y=-74, next_delay=300)
                     if pos_unit['arrv'] == 7:
                         self._add_command_to_orders(action=ActionType.CLEAR_AND_SELECT, right=self.world.width,
                                                     bottom=self.world.height, group=ARRV_GROUP)
-                        self._add_command_to_orders(action=ActionType.MOVE, x=0, y=-74, next_delay=185)
+                        self._add_command_to_orders(action=ActionType.MOVE, x=0, y=-74, next_delay=230)
                     if pos_unit['ifv'] == 7:
                         self._add_command_to_orders(action=ActionType.CLEAR_AND_SELECT, right=self.world.width,
                                                     bottom=self.world.height, group=IFV_GROUP)
-                        self._add_command_to_orders(action=ActionType.MOVE, x=0, y=-74, next_delay=185)
+                        self._add_command_to_orders(action=ActionType.MOVE, x=0, y=-74, next_delay=230)
                     if pos_unit['tank'] == 9:
                         self._add_command_to_orders(action=ActionType.CLEAR_AND_SELECT, right=self.world.width,
                                                     bottom=self.world.height, group=TANK_GROUP)
-                        self._add_command_to_orders(action=ActionType.MOVE, x=0, y=-74, next_delay=247)
+                        self._add_command_to_orders(action=ActionType.MOVE, x=0, y=-74, next_delay=300)
                     if pos_unit['arrv'] == 9:
                         self._add_command_to_orders(action=ActionType.CLEAR_AND_SELECT, right=self.world.width,
                                                     bottom=self.world.height, group=ARRV_GROUP)
-                        self._add_command_to_orders(action=ActionType.MOVE, x=0, y=-74, next_delay=185)
+                        self._add_command_to_orders(action=ActionType.MOVE, x=0, y=-74, next_delay=230)
                     if pos_unit['ifv'] == 9:
                         self._add_command_to_orders(action=ActionType.CLEAR_AND_SELECT, right=self.world.width,
                                                     bottom=self.world.height, group=IFV_GROUP)
-                        self._add_command_to_orders(action=ActionType.MOVE, x=0, y=-74, next_delay=185)
-                elif 8 in pos_units_ground and 9 in pos_units_ground:
+                        self._add_command_to_orders(action=ActionType.MOVE, x=0, y=-74, next_delay=230)
+                elif 8 in pos_units_ground.values() and 9 in pos_units_ground.values():
+                    if DEBUG:
+                        print('8 in pos_units_ground and 9 in pos_units_ground')
                     if pos_unit['tank'] == 7:
                         self._add_command_to_orders(action=ActionType.CLEAR_AND_SELECT, right=self.world.width,
                                                     bottom=self.world.height, group=TANK_GROUP)
-                        self._add_command_to_orders(action=ActionType.MOVE, x=-74, y=0, next_delay=247)
-                        self._add_command_to_orders(action=ActionType.MOVE, x=0, y=-74, next_delay=247)
+                        self._add_command_to_orders(action=ActionType.MOVE, x=-74, y=0, next_delay=300)
+                        self._add_command_to_orders(action=ActionType.MOVE, x=0, y=-74, next_delay=300)
                     if pos_unit['arrv'] == 7:
                         self._add_command_to_orders(action=ActionType.CLEAR_AND_SELECT, right=self.world.width,
                                                     bottom=self.world.height, group=ARRV_GROUP)
-                        self._add_command_to_orders(action=ActionType.MOVE, x=-74, y=0, next_delay=185)
-                        self._add_command_to_orders(action=ActionType.MOVE, x=0, y=-74, next_delay=185)
+                        self._add_command_to_orders(action=ActionType.MOVE, x=-74, y=0, next_delay=230)
+                        self._add_command_to_orders(action=ActionType.MOVE, x=0, y=-74, next_delay=230)
                     if pos_unit['ifv'] == 7:
                         self._add_command_to_orders(action=ActionType.CLEAR_AND_SELECT, right=self.world.width,
                                                     bottom=self.world.height, group=IFV_GROUP)
-                        self._add_command_to_orders(action=ActionType.MOVE, x=-74, y=0, next_delay=185)
-                        self._add_command_to_orders(action=ActionType.MOVE, x=0, y=-74, next_delay=185)
+                        self._add_command_to_orders(action=ActionType.MOVE, x=-74, y=0, next_delay=230)
+                        self._add_command_to_orders(action=ActionType.MOVE, x=0, y=-74, next_delay=230)
                     if pos_unit['tank'] == 9:
                         self._add_command_to_orders(action=ActionType.CLEAR_AND_SELECT, right=self.world.width,
                                                     bottom=self.world.height, group=TANK_GROUP)
-                        self._add_command_to_orders(action=ActionType.MOVE, x=0, y=-74, next_delay=247)
+                        self._add_command_to_orders(action=ActionType.MOVE, x=0, y=-74, next_delay=300)
                     if pos_unit['arrv'] == 9:
                         self._add_command_to_orders(action=ActionType.CLEAR_AND_SELECT, right=self.world.width,
                                                     bottom=self.world.height, group=ARRV_GROUP)
-                        self._add_command_to_orders(action=ActionType.MOVE, x=0, y=-74, next_delay=185)
+                        self._add_command_to_orders(action=ActionType.MOVE, x=0, y=-74, next_delay=230)
                     if pos_unit['ifv'] == 9:
                         self._add_command_to_orders(action=ActionType.CLEAR_AND_SELECT, right=self.world.width,
                                                     bottom=self.world.height, group=IFV_GROUP)
-                        self._add_command_to_orders(action=ActionType.MOVE, x=0, y=-74, next_delay=185)
+                        self._add_command_to_orders(action=ActionType.MOVE, x=0, y=-74, next_delay=230)
 
-            elif 6 in pos_units_ground:
-                if 1 in pos_units_ground and 2 in pos_units_ground:
+            elif 6 in pos_units_ground.values():
+                if DEBUG:
+                    print('6 in pos_units_ground:')
+                if 1 in pos_units_ground.values() and 2 in pos_units_ground.values():
+                    if DEBUG:
+                        print('1 in pos_units_ground and 2 in pos_units_ground')
                     if pos_unit['tank'] == 1:
                         self._add_command_to_orders(action=ActionType.CLEAR_AND_SELECT, right=self.world.width,
                                                     bottom=self.world.height, group=TANK_GROUP)
-                        self._add_command_to_orders(action=ActionType.MOVE, x=0, y=74, next_delay=247)
+                        self._add_command_to_orders(action=ActionType.MOVE, x=0, y=74, next_delay=300)
                     if pos_unit['arrv'] == 1:
                         self._add_command_to_orders(action=ActionType.CLEAR_AND_SELECT, right=self.world.width,
                                                     bottom=self.world.height, group=ARRV_GROUP)
-                        self._add_command_to_orders(action=ActionType.MOVE, x=0, y=74, next_delay=185)
+                        self._add_command_to_orders(action=ActionType.MOVE, x=0, y=74, next_delay=230)
                     if pos_unit['ifv'] == 1:
                         self._add_command_to_orders(action=ActionType.CLEAR_AND_SELECT, right=self.world.width,
                                                     bottom=self.world.height, group=IFV_GROUP)
-                        self._add_command_to_orders(action=ActionType.MOVE, x=0, y=74, next_delay=185)
+                        self._add_command_to_orders(action=ActionType.MOVE, x=0, y=74, next_delay=230)
                     if pos_unit['tank'] == 2:
                         self._add_command_to_orders(action=ActionType.CLEAR_AND_SELECT, right=self.world.width,
                                                     bottom=self.world.height, group=TANK_GROUP)
-                        self._add_command_to_orders(action=ActionType.MOVE, x=0, y=74, next_delay=247)
+                        self._add_command_to_orders(action=ActionType.MOVE, x=0, y=74, next_delay=300)
                     if pos_unit['arrv'] == 2:
                         self._add_command_to_orders(action=ActionType.CLEAR_AND_SELECT, right=self.world.width,
                                                     bottom=self.world.height, group=ARRV_GROUP)
-                        self._add_command_to_orders(action=ActionType.MOVE, x=0, y=74, next_delay=185)
+                        self._add_command_to_orders(action=ActionType.MOVE, x=0, y=74, next_delay=230)
                     if pos_unit['ifv'] == 2:
                         self._add_command_to_orders(action=ActionType.CLEAR_AND_SELECT, right=self.world.width,
                                                     bottom=self.world.height, group=IFV_GROUP)
-                        self._add_command_to_orders(action=ActionType.MOVE, x=0, y=74, next_delay=185)
-                elif 1 in pos_units_ground and 3 in pos_units_ground:
+                        self._add_command_to_orders(action=ActionType.MOVE, x=0, y=74, next_delay=230)
+                elif 1 in pos_units_ground.values() and 3 in pos_units_ground.values():
+                    if DEBUG:
+                        print('1 in pos_units_ground and 3 in pos_units_ground')
                     if pos_unit['tank'] == 1:
                         self._add_command_to_orders(action=ActionType.CLEAR_AND_SELECT, right=self.world.width,
                                                     bottom=self.world.height, group=TANK_GROUP)
-                        self._add_command_to_orders(action=ActionType.MOVE, x=0, y=74, next_delay=247)
+                        self._add_command_to_orders(action=ActionType.MOVE, x=0, y=74, next_delay=300)
                     if pos_unit['arrv'] == 1:
                         self._add_command_to_orders(action=ActionType.CLEAR_AND_SELECT, right=self.world.width,
                                                     bottom=self.world.height, group=ARRV_GROUP)
-                        self._add_command_to_orders(action=ActionType.MOVE, x=0, y=74, next_delay=185)
+                        self._add_command_to_orders(action=ActionType.MOVE, x=0, y=74, next_delay=230)
                     if pos_unit['ifv'] == 1:
                         self._add_command_to_orders(action=ActionType.CLEAR_AND_SELECT, right=self.world.width,
                                                     bottom=self.world.height, group=IFV_GROUP)
-                        self._add_command_to_orders(action=ActionType.MOVE, x=0, y=74, next_delay=185)
+                        self._add_command_to_orders(action=ActionType.MOVE, x=0, y=74, next_delay=230)
                     if pos_unit['tank'] == 3:
                         self._add_command_to_orders(action=ActionType.CLEAR_AND_SELECT, right=self.world.width,
                                                     bottom=self.world.height, group=TANK_GROUP)
-                        self._add_command_to_orders(action=ActionType.MOVE, x=-74, y=0, next_delay=247)
-                        self._add_command_to_orders(action=ActionType.MOVE, x=0, y=74, next_delay=247)
+                        self._add_command_to_orders(action=ActionType.MOVE, x=-74, y=0, next_delay=300)
+                        self._add_command_to_orders(action=ActionType.MOVE, x=0, y=74, next_delay=300)
                     if pos_unit['arrv'] == 3:
                         self._add_command_to_orders(action=ActionType.CLEAR_AND_SELECT, right=self.world.width,
                                                     bottom=self.world.height, group=ARRV_GROUP)
-                        self._add_command_to_orders(action=ActionType.MOVE, x=-74, y=0, next_delay=185)
-                        self._add_command_to_orders(action=ActionType.MOVE, x=0, y=74, next_delay=185)
+                        self._add_command_to_orders(action=ActionType.MOVE, x=-74, y=0, next_delay=230)
+                        self._add_command_to_orders(action=ActionType.MOVE, x=0, y=74, next_delay=230)
                     if pos_unit['ifv'] == 3:
                         self._add_command_to_orders(action=ActionType.CLEAR_AND_SELECT, right=self.world.width,
                                                     bottom=self.world.height, group=IFV_GROUP)
-                        self._add_command_to_orders(action=ActionType.MOVE, x=-74, y=0, next_delay=185)
-                        self._add_command_to_orders(action=ActionType.MOVE, x=0, y=74, next_delay=185)
-                elif 1 in pos_units_ground and 7 in pos_units_ground:
+                        self._add_command_to_orders(action=ActionType.MOVE, x=-74, y=0, next_delay=230)
+                        self._add_command_to_orders(action=ActionType.MOVE, x=0, y=74, next_delay=230)
+                elif 1 in pos_units_ground.values() and 7 in pos_units_ground.values():
+                    if DEBUG:
+                        print('1 in pos_units_ground and 7 in pos_units_ground')
                     if pos_unit['tank'] == 1:
                         self._add_command_to_orders(action=ActionType.CLEAR_AND_SELECT, right=self.world.width,
                                                     bottom=self.world.height, group=TANK_GROUP)
-                        self._add_command_to_orders(action=ActionType.MOVE, x=0, y=74, next_delay=247)
+                        self._add_command_to_orders(action=ActionType.MOVE, x=0, y=74, next_delay=300)
                     if pos_unit['arrv'] == 1:
                         self._add_command_to_orders(action=ActionType.CLEAR_AND_SELECT, right=self.world.width,
                                                     bottom=self.world.height, group=ARRV_GROUP)
-                        self._add_command_to_orders(action=ActionType.MOVE, x=0, y=74, next_delay=185)
+                        self._add_command_to_orders(action=ActionType.MOVE, x=0, y=74, next_delay=230)
                     if pos_unit['ifv'] == 1:
                         self._add_command_to_orders(action=ActionType.CLEAR_AND_SELECT, right=self.world.width,
                                                     bottom=self.world.height, group=IFV_GROUP)
-                        self._add_command_to_orders(action=ActionType.MOVE, x=0, y=74, next_delay=185)
+                        self._add_command_to_orders(action=ActionType.MOVE, x=0, y=74, next_delay=230)
                     if pos_unit['tank'] == 7:
                         self._add_command_to_orders(action=ActionType.CLEAR_AND_SELECT, right=self.world.width,
                                                     bottom=self.world.height, group=TANK_GROUP)
-                        self._add_command_to_orders(action=ActionType.MOVE, x=74, y=0, next_delay=247)
-                        self._add_command_to_orders(action=ActionType.MOVE, x=0, y=-74, next_delay=247)
+                        self._add_command_to_orders(action=ActionType.MOVE, x=74, y=0, next_delay=300)
+                        self._add_command_to_orders(action=ActionType.MOVE, x=0, y=-74, next_delay=300)
                     if pos_unit['arrv'] == 7:
                         self._add_command_to_orders(action=ActionType.CLEAR_AND_SELECT, right=self.world.width,
                                                     bottom=self.world.height, group=ARRV_GROUP)
-                        self._add_command_to_orders(action=ActionType.MOVE, x=74, y=0, next_delay=185)
-                        self._add_command_to_orders(action=ActionType.MOVE, x=0, y=-74, next_delay=185)
+                        self._add_command_to_orders(action=ActionType.MOVE, x=74, y=0, next_delay=230)
+                        self._add_command_to_orders(action=ActionType.MOVE, x=0, y=-74, next_delay=230)
                     if pos_unit['ifv'] == 7:
                         self._add_command_to_orders(action=ActionType.CLEAR_AND_SELECT, right=self.world.width,
                                                     bottom=self.world.height, group=IFV_GROUP)
-                        self._add_command_to_orders(action=ActionType.MOVE, x=74, y=0, next_delay=185)
-                        self._add_command_to_orders(action=ActionType.MOVE, x=0, y=-74, next_delay=185)
-                elif 1 in pos_units_ground and 8 in pos_units_ground:
+                        self._add_command_to_orders(action=ActionType.MOVE, x=74, y=0, next_delay=230)
+                        self._add_command_to_orders(action=ActionType.MOVE, x=0, y=-74, next_delay=230)
+                elif 1 in pos_units_ground.values() and 8 in pos_units_ground.values():
+                    if DEBUG:
+                        print('1 in pos_units_ground and 8 in pos_units_ground')
                     if pos_unit['tank'] == 1:
                         self._add_command_to_orders(action=ActionType.CLEAR_AND_SELECT, right=self.world.width,
                                                     bottom=self.world.height, group=TANK_GROUP)
-                        self._add_command_to_orders(action=ActionType.MOVE, x=0, y=74, next_delay=247)
+                        self._add_command_to_orders(action=ActionType.MOVE, x=0, y=74, next_delay=300)
                     if pos_unit['arrv'] == 1:
                         self._add_command_to_orders(action=ActionType.CLEAR_AND_SELECT, right=self.world.width,
                                                     bottom=self.world.height, group=ARRV_GROUP)
-                        self._add_command_to_orders(action=ActionType.MOVE, x=0, y=74, next_delay=185)
+                        self._add_command_to_orders(action=ActionType.MOVE, x=0, y=74, next_delay=230)
                     if pos_unit['ifv'] == 1:
                         self._add_command_to_orders(action=ActionType.CLEAR_AND_SELECT, right=self.world.width,
                                                     bottom=self.world.height, group=IFV_GROUP)
-                        self._add_command_to_orders(action=ActionType.MOVE, x=0, y=74, next_delay=185)
+                        self._add_command_to_orders(action=ActionType.MOVE, x=0, y=74, next_delay=230)
                     if pos_unit['tank'] == 8:
                         self._add_command_to_orders(action=ActionType.CLEAR_AND_SELECT, right=self.world.width,
                                                     bottom=self.world.height, group=TANK_GROUP)
-                        self._add_command_to_orders(action=ActionType.MOVE, x=0, y=-74, next_delay=247)
+                        self._add_command_to_orders(action=ActionType.MOVE, x=0, y=-74, next_delay=300)
                     if pos_unit['arrv'] == 8:
                         self._add_command_to_orders(action=ActionType.CLEAR_AND_SELECT, right=self.world.width,
                                                     bottom=self.world.height, group=ARRV_GROUP)
-                        self._add_command_to_orders(action=ActionType.MOVE, x=0, y=-74, next_delay=185)
+                        self._add_command_to_orders(action=ActionType.MOVE, x=0, y=-74, next_delay=230)
                     if pos_unit['ifv'] == 8:
                         self._add_command_to_orders(action=ActionType.CLEAR_AND_SELECT, right=self.world.width,
                                                     bottom=self.world.height, group=IFV_GROUP)
-                        self._add_command_to_orders(action=ActionType.MOVE, x=0, y=-74, next_delay=185)
-                elif 1 in pos_units_ground and 9 in pos_units_ground:
+                        self._add_command_to_orders(action=ActionType.MOVE, x=0, y=-74, next_delay=230)
+                elif 1 in pos_units_ground.values() and 9 in pos_units_ground.values():
+                    if DEBUG:
+                        print('1 in pos_units_ground and 9 in pos_units_ground')
                     if pos_unit['tank'] == 1:
                         self._add_command_to_orders(action=ActionType.CLEAR_AND_SELECT, right=self.world.width,
                                                     bottom=self.world.height, group=TANK_GROUP)
-                        self._add_command_to_orders(action=ActionType.MOVE, x=0, y=74, next_delay=247)
+                        self._add_command_to_orders(action=ActionType.MOVE, x=0, y=74, next_delay=300)
                     if pos_unit['arrv'] == 1:
                         self._add_command_to_orders(action=ActionType.CLEAR_AND_SELECT, right=self.world.width,
                                                     bottom=self.world.height, group=ARRV_GROUP)
-                        self._add_command_to_orders(action=ActionType.MOVE, x=0, y=74, next_delay=185)
+                        self._add_command_to_orders(action=ActionType.MOVE, x=0, y=74, next_delay=230)
                     if pos_unit['ifv'] == 1:
                         self._add_command_to_orders(action=ActionType.CLEAR_AND_SELECT, right=self.world.width,
                                                     bottom=self.world.height, group=IFV_GROUP)
-                        self._add_command_to_orders(action=ActionType.MOVE, x=0, y=74, next_delay=185)
+                        self._add_command_to_orders(action=ActionType.MOVE, x=0, y=74, next_delay=230)
                     if pos_unit['tank'] == 9:
                         self._add_command_to_orders(action=ActionType.CLEAR_AND_SELECT, right=self.world.width,
                                                     bottom=self.world.height, group=TANK_GROUP)
-                        self._add_command_to_orders(action=ActionType.MOVE, x=-74, y=0, next_delay=247)
-                        self._add_command_to_orders(action=ActionType.MOVE, x=0, y=-74, next_delay=247)
+                        self._add_command_to_orders(action=ActionType.MOVE, x=-74, y=0, next_delay=300)
+                        self._add_command_to_orders(action=ActionType.MOVE, x=0, y=-74, next_delay=300)
                     if pos_unit['arrv'] == 9:
                         self._add_command_to_orders(action=ActionType.CLEAR_AND_SELECT, right=self.world.width,
                                                     bottom=self.world.height, group=ARRV_GROUP)
-                        self._add_command_to_orders(action=ActionType.MOVE, x=-74, y=0, next_delay=185)
-                        self._add_command_to_orders(action=ActionType.MOVE, x=0, y=-74, next_delay=185)
+                        self._add_command_to_orders(action=ActionType.MOVE, x=-74, y=0, next_delay=230)
+                        self._add_command_to_orders(action=ActionType.MOVE, x=0, y=-74, next_delay=230)
                     if pos_unit['ifv'] == 9:
                         self._add_command_to_orders(action=ActionType.CLEAR_AND_SELECT, right=self.world.width,
                                                     bottom=self.world.height, group=IFV_GROUP)
-                        self._add_command_to_orders(action=ActionType.MOVE, x=-74, y=0, next_delay=185)
-                        self._add_command_to_orders(action=ActionType.MOVE, x=0, y=-74, next_delay=185)
-                elif 2 in pos_units_ground and 3 in pos_units_ground:
+                        self._add_command_to_orders(action=ActionType.MOVE, x=-74, y=0, next_delay=230)
+                        self._add_command_to_orders(action=ActionType.MOVE, x=0, y=-74, next_delay=230)
+                elif 2 in pos_units_ground.values() and 3 in pos_units_ground.values():
+                    if DEBUG:
+                        print('2 in pos_units_ground and 3 in pos_units_ground')
                     if pos_unit['tank'] == 6:
                         self._add_command_to_orders(action=ActionType.CLEAR_AND_SELECT, right=self.world.width,
                                                     bottom=self.world.height, group=IFV_GROUP)
@@ -1626,236 +2077,248 @@ class TShirtBot:
                                                     bottom=self.world.height, group=TANK_GROUP)
                         self._add_command_to_orders(action=ActionType.ADD_TO_SELECTION, right=self.world.width,
                                                     bottom=self.world.height, group=ARRV_GROUP)
-                    self._add_command_to_orders(action=ActionType.MOVE, x=-74, y=0, next_delay=247)
-                    self._add_command_to_orders(action=ActionType.MOVE, x=0, y=74, next_delay=247)
-                elif 2 in pos_units_ground and 7 in pos_units_ground:
+                    self._add_command_to_orders(action=ActionType.MOVE, x=-74, y=0, next_delay=300)
+                    self._add_command_to_orders(action=ActionType.MOVE, x=0, y=74, next_delay=300)
+                elif 2 in pos_units_ground.values() and 7 in pos_units_ground.values():
+                    if DEBUG:
+                        print('2 in pos_units_ground and 7 in pos_units_ground')
                     if pos_unit['tank'] == 2:
                         self._add_command_to_orders(action=ActionType.CLEAR_AND_SELECT, right=self.world.width,
                                                     bottom=self.world.height, group=TANK_GROUP)
-                        self._add_command_to_orders(action=ActionType.MOVE, x=0, y=74, next_delay=247)
+                        self._add_command_to_orders(action=ActionType.MOVE, x=0, y=74, next_delay=300)
                     if pos_unit['arrv'] == 2:
                         self._add_command_to_orders(action=ActionType.CLEAR_AND_SELECT, right=self.world.width,
                                                     bottom=self.world.height, group=ARRV_GROUP)
-                        self._add_command_to_orders(action=ActionType.MOVE, x=0, y=74, next_delay=185)
+                        self._add_command_to_orders(action=ActionType.MOVE, x=0, y=74, next_delay=230)
                     if pos_unit['ifv'] == 2:
                         self._add_command_to_orders(action=ActionType.CLEAR_AND_SELECT, right=self.world.width,
                                                     bottom=self.world.height, group=IFV_GROUP)
-                        self._add_command_to_orders(action=ActionType.MOVE, x=0, y=74, next_delay=185)
+                        self._add_command_to_orders(action=ActionType.MOVE, x=0, y=74, next_delay=230)
                     if pos_unit['tank'] == 7:
                         self._add_command_to_orders(action=ActionType.CLEAR_AND_SELECT, right=self.world.width,
                                                     bottom=self.world.height, group=TANK_GROUP)
-                        self._add_command_to_orders(action=ActionType.MOVE, x=0, y=-74, next_delay=247)
+                        self._add_command_to_orders(action=ActionType.MOVE, x=0, y=-74, next_delay=300)
                     if pos_unit['arrv'] == 7:
                         self._add_command_to_orders(action=ActionType.CLEAR_AND_SELECT, right=self.world.width,
                                                     bottom=self.world.height, group=ARRV_GROUP)
-                        self._add_command_to_orders(action=ActionType.MOVE, x=0, y=-74, next_delay=185)
+                        self._add_command_to_orders(action=ActionType.MOVE, x=0, y=-74, next_delay=230)
                     if pos_unit['ifv'] == 7:
                         self._add_command_to_orders(action=ActionType.CLEAR_AND_SELECT, right=self.world.width,
                                                     bottom=self.world.height, group=IFV_GROUP)
-                        self._add_command_to_orders(action=ActionType.MOVE, x=0, y=-74, next_delay=185)
-                elif 2 in pos_units_ground and 8 in pos_units_ground:
+                        self._add_command_to_orders(action=ActionType.MOVE, x=0, y=-74, next_delay=230)
+                elif 2 in pos_units_ground.values() and 8 in pos_units_ground.values():
+                    if DEBUG:
+                        print('2 in pos_units_ground and 8 in pos_units_ground')
                     if pos_unit['tank'] == 2:
                         self._add_command_to_orders(action=ActionType.CLEAR_AND_SELECT, right=self.world.width,
                                                     bottom=self.world.height, group=TANK_GROUP)
-                        self._add_command_to_orders(action=ActionType.MOVE, x=0, y=74, next_delay=247)
+                        self._add_command_to_orders(action=ActionType.MOVE, x=0, y=74, next_delay=300)
                     if pos_unit['arrv'] == 2:
                         self._add_command_to_orders(action=ActionType.CLEAR_AND_SELECT, right=self.world.width,
                                                     bottom=self.world.height, group=ARRV_GROUP)
-                        self._add_command_to_orders(action=ActionType.MOVE, x=0, y=74, next_delay=185)
+                        self._add_command_to_orders(action=ActionType.MOVE, x=0, y=74, next_delay=230)
                     if pos_unit['ifv'] == 2:
                         self._add_command_to_orders(action=ActionType.CLEAR_AND_SELECT, right=self.world.width,
                                                     bottom=self.world.height, group=IFV_GROUP)
-                        self._add_command_to_orders(action=ActionType.MOVE, x=0, y=74, next_delay=185)
+                        self._add_command_to_orders(action=ActionType.MOVE, x=0, y=74, next_delay=230)
                     if pos_unit['tank'] == 8:
                         self._add_command_to_orders(action=ActionType.CLEAR_AND_SELECT, right=self.world.width,
                                                     bottom=self.world.height, group=TANK_GROUP)
-                        self._add_command_to_orders(action=ActionType.MOVE, x=-74, y=0, next_delay=247)
-                        self._add_command_to_orders(action=ActionType.MOVE, x=0, y=-74, next_delay=247)
+                        self._add_command_to_orders(action=ActionType.MOVE, x=-74, y=0, next_delay=300)
+                        self._add_command_to_orders(action=ActionType.MOVE, x=0, y=-74, next_delay=300)
                     if pos_unit['arrv'] == 8:
                         self._add_command_to_orders(action=ActionType.CLEAR_AND_SELECT, right=self.world.width,
                                                     bottom=self.world.height, group=ARRV_GROUP)
-                        self._add_command_to_orders(action=ActionType.MOVE, x=-74, y=0, next_delay=185)
-                        self._add_command_to_orders(action=ActionType.MOVE, x=0, y=-74, next_delay=185)
+                        self._add_command_to_orders(action=ActionType.MOVE, x=-74, y=0, next_delay=230)
+                        self._add_command_to_orders(action=ActionType.MOVE, x=0, y=-74, next_delay=230)
                     if pos_unit['ifv'] == 8:
                         self._add_command_to_orders(action=ActionType.CLEAR_AND_SELECT, right=self.world.width,
                                                     bottom=self.world.height, group=IFV_GROUP)
-                        self._add_command_to_orders(action=ActionType.MOVE, x=-74, y=0, next_delay=185)
-                        self._add_command_to_orders(action=ActionType.MOVE, x=0, y=-74, next_delay=185)
-                elif 2 in pos_units_ground and 9 in pos_units_ground:
+                        self._add_command_to_orders(action=ActionType.MOVE, x=-74, y=0, next_delay=230)
+                        self._add_command_to_orders(action=ActionType.MOVE, x=0, y=-74, next_delay=230)
+                elif 2 in pos_units_ground.values() and 9 in pos_units_ground.values():
+                    if DEBUG:
+                        print('2 in pos_units_ground and 9 in pos_units_ground')
                     if pos_unit['tank'] == 2:
                         self._add_command_to_orders(action=ActionType.CLEAR_AND_SELECT, right=self.world.width,
                                                     bottom=self.world.height, group=TANK_GROUP)
-                        self._add_command_to_orders(action=ActionType.MOVE, x=-74, y=0, next_delay=247)
-                        self._add_command_to_orders(action=ActionType.MOVE, x=0, y=74, next_delay=247)
+                        self._add_command_to_orders(action=ActionType.MOVE, x=-74, y=0, next_delay=300)
+                        self._add_command_to_orders(action=ActionType.MOVE, x=0, y=74, next_delay=300)
                     if pos_unit['arrv'] == 2:
                         self._add_command_to_orders(action=ActionType.CLEAR_AND_SELECT, right=self.world.width,
                                                     bottom=self.world.height, group=ARRV_GROUP)
-                        self._add_command_to_orders(action=ActionType.MOVE, x=-74, y=0, next_delay=185)
-                        self._add_command_to_orders(action=ActionType.MOVE, x=0, y=74, next_delay=185)
+                        self._add_command_to_orders(action=ActionType.MOVE, x=-74, y=0, next_delay=230)
+                        self._add_command_to_orders(action=ActionType.MOVE, x=0, y=74, next_delay=230)
                     if pos_unit['ifv'] == 2:
                         self._add_command_to_orders(action=ActionType.CLEAR_AND_SELECT, right=self.world.width,
                                                     bottom=self.world.height, group=IFV_GROUP)
-                        self._add_command_to_orders(action=ActionType.MOVE, x=-74, y=0, next_delay=185)
-                        self._add_command_to_orders(action=ActionType.MOVE, x=0, y=74, next_delay=185)
+                        self._add_command_to_orders(action=ActionType.MOVE, x=-74, y=0, next_delay=230)
+                        self._add_command_to_orders(action=ActionType.MOVE, x=0, y=74, next_delay=230)
                     if pos_unit['tank'] == 9:
                         self._add_command_to_orders(action=ActionType.CLEAR_AND_SELECT, right=self.world.width,
                                                     bottom=self.world.height, group=TANK_GROUP)
-                        self._add_command_to_orders(action=ActionType.MOVE, x=-74, y=0, next_delay=247)
-                        self._add_command_to_orders(action=ActionType.MOVE, x=0, y=-74, next_delay=247)
+                        self._add_command_to_orders(action=ActionType.MOVE, x=-74, y=0, next_delay=300)
+                        self._add_command_to_orders(action=ActionType.MOVE, x=0, y=-74, next_delay=300)
                     if pos_unit['arrv'] == 9:
                         self._add_command_to_orders(action=ActionType.CLEAR_AND_SELECT, right=self.world.width,
                                                     bottom=self.world.height, group=ARRV_GROUP)
-                        self._add_command_to_orders(action=ActionType.MOVE, x=-74, y=0, next_delay=185)
-                        self._add_command_to_orders(action=ActionType.MOVE, x=0, y=-74, next_delay=185)
+                        self._add_command_to_orders(action=ActionType.MOVE, x=-74, y=0, next_delay=230)
+                        self._add_command_to_orders(action=ActionType.MOVE, x=0, y=-74, next_delay=230)
                     if pos_unit['ifv'] == 9:
                         self._add_command_to_orders(action=ActionType.CLEAR_AND_SELECT, right=self.world.width,
                                                     bottom=self.world.height, group=IFV_GROUP)
-                        self._add_command_to_orders(action=ActionType.MOVE, x=-74, y=0, next_delay=185)
-                        self._add_command_to_orders(action=ActionType.MOVE, x=0, y=-74, next_delay=185)
-                elif 3 in pos_units_ground and 7 in pos_units_ground:
+                        self._add_command_to_orders(action=ActionType.MOVE, x=-74, y=0, next_delay=230)
+                        self._add_command_to_orders(action=ActionType.MOVE, x=0, y=-74, next_delay=230)
+                elif 3 in pos_units_ground.values() and 7 in pos_units_ground.values():
+                    if DEBUG:
+                        print('3 in pos_units_ground and 7 in pos_units_ground')
                     if pos_unit['tank'] == 3:
                         self._add_command_to_orders(action=ActionType.CLEAR_AND_SELECT, right=self.world.width,
                                                     bottom=self.world.height, group=TANK_GROUP)
-                        self._add_command_to_orders(action=ActionType.MOVE, x=-74, y=0, next_delay=247)
-                        self._add_command_to_orders(action=ActionType.MOVE, x=0, y=74, next_delay=247)
+                        self._add_command_to_orders(action=ActionType.MOVE, x=-74, y=0, next_delay=300)
+                        self._add_command_to_orders(action=ActionType.MOVE, x=0, y=74, next_delay=300)
                     if pos_unit['arrv'] == 3:
                         self._add_command_to_orders(action=ActionType.CLEAR_AND_SELECT, right=self.world.width,
                                                     bottom=self.world.height, group=ARRV_GROUP)
-                        self._add_command_to_orders(action=ActionType.MOVE, x=-74, y=0, next_delay=185)
-                        self._add_command_to_orders(action=ActionType.MOVE, x=0, y=74, next_delay=185)
+                        self._add_command_to_orders(action=ActionType.MOVE, x=-74, y=0, next_delay=230)
+                        self._add_command_to_orders(action=ActionType.MOVE, x=0, y=74, next_delay=230)
                     if pos_unit['ifv'] == 3:
                         self._add_command_to_orders(action=ActionType.CLEAR_AND_SELECT, right=self.world.width,
                                                     bottom=self.world.height, group=IFV_GROUP)
-                        self._add_command_to_orders(action=ActionType.MOVE, x=-74, y=0, next_delay=185)
-                        self._add_command_to_orders(action=ActionType.MOVE, x=0, y=74, next_delay=185)
+                        self._add_command_to_orders(action=ActionType.MOVE, x=-74, y=0, next_delay=230)
+                        self._add_command_to_orders(action=ActionType.MOVE, x=0, y=74, next_delay=230)
                     if pos_unit['tank'] == 7:
                         self._add_command_to_orders(action=ActionType.CLEAR_AND_SELECT, right=self.world.width,
                                                     bottom=self.world.height, group=TANK_GROUP)
-                        self._add_command_to_orders(action=ActionType.MOVE, x=0, y=-74, next_delay=247)
+                        self._add_command_to_orders(action=ActionType.MOVE, x=0, y=-74, next_delay=300)
                     if pos_unit['arrv'] == 7:
                         self._add_command_to_orders(action=ActionType.CLEAR_AND_SELECT, right=self.world.width,
                                                     bottom=self.world.height, group=ARRV_GROUP)
-                        self._add_command_to_orders(action=ActionType.MOVE, x=0, y=-74, next_delay=185)
+                        self._add_command_to_orders(action=ActionType.MOVE, x=0, y=-74, next_delay=230)
                     if pos_unit['ifv'] == 7:
                         self._add_command_to_orders(action=ActionType.CLEAR_AND_SELECT, right=self.world.width,
                                                     bottom=self.world.height, group=IFV_GROUP)
-                        self._add_command_to_orders(action=ActionType.MOVE, x=0, y=-74, next_delay=185)
-                elif 3 in pos_units_ground and 8 in pos_units_ground:
+                        self._add_command_to_orders(action=ActionType.MOVE, x=0, y=-74, next_delay=230)
+                elif 3 in pos_units_ground.values() and 8 in pos_units_ground.values():
+                    if DEBUG:
+                        print('3 in pos_units_ground and 8 in pos_units_ground')
+                    if pos_unit['tank'] == 3:
+                        self._add_command_to_orders(action=ActionType.CLEAR_AND_SELECT, group=TANK_GROUP)
+                        self._add_command_to_orders(action=ActionType.MOVE, x=-74, y=0, next_delay=300)
+                        self._add_command_to_orders(action=ActionType.MOVE, x=0, y=74, next_delay=300)
+                    if pos_unit['arrv'] == 3:
+                        self._add_command_to_orders(action=ActionType.CLEAR_AND_SELECT, group=ARRV_GROUP)
+                        self._add_command_to_orders(action=ActionType.MOVE, x=-74, y=0, next_delay=230)
+                        self._add_command_to_orders(action=ActionType.MOVE, x=0, y=74, next_delay=230)
+                    if pos_unit['ifv'] == 3:
+                        self._add_command_to_orders(action=ActionType.CLEAR_AND_SELECT, group=IFV_GROUP)
+                        self._add_command_to_orders(action=ActionType.MOVE, x=-74, y=0, next_delay=230)
+                        self._add_command_to_orders(action=ActionType.MOVE, x=0, y=74, next_delay=230)
+                    if pos_unit['tank'] == 8:
+                        self._add_command_to_orders(action=ActionType.CLEAR_AND_SELECT, group=TANK_GROUP)
+                        self._add_command_to_orders(action=ActionType.MOVE, x=-74, y=0, next_delay=300)
+                        self._add_command_to_orders(action=ActionType.MOVE, x=0, y=-74, next_delay=300)
+                    if pos_unit['arrv'] == 8:
+                        self._add_command_to_orders(action=ActionType.CLEAR_AND_SELECT, group=ARRV_GROUP)
+                        self._add_command_to_orders(action=ActionType.MOVE, x=-74, y=0, next_delay=230)
+                        self._add_command_to_orders(action=ActionType.MOVE, x=0, y=-74, next_delay=230)
+                    if pos_unit['ifv'] == 8:
+                        self._add_command_to_orders(action=ActionType.CLEAR_AND_SELECT, group=IFV_GROUP)
+                        self._add_command_to_orders(action=ActionType.MOVE, x=-74, y=0, next_delay=230)
+                        self._add_command_to_orders(action=ActionType.MOVE, x=0, y=-74, next_delay=230)
+                elif 3 in pos_units_ground.values() and 9 in pos_units_ground.values():
+                    if DEBUG:
+                        print('3 in pos_units_ground and 9 in pos_units_ground')
                     if pos_unit['tank'] == 3:
                         self._add_command_to_orders(action=ActionType.CLEAR_AND_SELECT, right=self.world.width,
                                                     bottom=self.world.height, group=TANK_GROUP)
-                        self._add_command_to_orders(action=ActionType.MOVE, x=-74, y=0, next_delay=247)
-                        self._add_command_to_orders(action=ActionType.MOVE, x=0, y=74, next_delay=247)
+                        self._add_command_to_orders(action=ActionType.MOVE, x=-148, y=0, next_delay=550)
+                        self._add_command_to_orders(action=ActionType.MOVE, x=0, y=74, next_delay=300)
                     if pos_unit['arrv'] == 3:
                         self._add_command_to_orders(action=ActionType.CLEAR_AND_SELECT, right=self.world.width,
                                                     bottom=self.world.height, group=ARRV_GROUP)
-                        self._add_command_to_orders(action=ActionType.MOVE, x=-74, y=0, next_delay=185)
-                        self._add_command_to_orders(action=ActionType.MOVE, x=0, y=74, next_delay=185)
+                        self._add_command_to_orders(action=ActionType.MOVE, x=-148, y=0, next_delay=450)
+                        self._add_command_to_orders(action=ActionType.MOVE, x=0, y=74, next_delay=230)
                     if pos_unit['ifv'] == 3:
                         self._add_command_to_orders(action=ActionType.CLEAR_AND_SELECT, right=self.world.width,
                                                     bottom=self.world.height, group=IFV_GROUP)
-                        self._add_command_to_orders(action=ActionType.MOVE, x=-74, y=0, next_delay=185)
-                        self._add_command_to_orders(action=ActionType.MOVE, x=0, y=74, next_delay=185)
+                        self._add_command_to_orders(action=ActionType.MOVE, x=-148, y=0, next_delay=450)
+                        self._add_command_to_orders(action=ActionType.MOVE, x=0, y=74, next_delay=230)
+                    if pos_unit['tank'] == 9:
+                        self._add_command_to_orders(action=ActionType.CLEAR_AND_SELECT, right=self.world.width,
+                                                    bottom=self.world.height, group=TANK_GROUP)
+                        self._add_command_to_orders(action=ActionType.MOVE, x=-74, y=0, next_delay=300)
+                        self._add_command_to_orders(action=ActionType.MOVE, x=0, y=-74, next_delay=300)
+                    if pos_unit['arrv'] == 9:
+                        self._add_command_to_orders(action=ActionType.CLEAR_AND_SELECT, right=self.world.width,
+                                                    bottom=self.world.height, group=ARRV_GROUP)
+                        self._add_command_to_orders(action=ActionType.MOVE, x=-74, y=0, next_delay=230)
+                        self._add_command_to_orders(action=ActionType.MOVE, x=0, y=-74, next_delay=230)
+                    if pos_unit['ifv'] == 9:
+                        self._add_command_to_orders(action=ActionType.CLEAR_AND_SELECT, right=self.world.width,
+                                                    bottom=self.world.height, group=IFV_GROUP)
+                        self._add_command_to_orders(action=ActionType.MOVE, x=-74, y=0, next_delay=230)
+                        self._add_command_to_orders(action=ActionType.MOVE, x=0, y=-74, next_delay=230)
+                elif 7 in pos_units_ground.values() and 8 in pos_units_ground.values():
+                    if DEBUG:
+                        print('7 in pos_units_ground and 8 in pos_units_ground')
+                    if pos_unit['tank'] == 7:
+                        self._add_command_to_orders(action=ActionType.CLEAR_AND_SELECT, right=self.world.width,
+                                                    bottom=self.world.height, group=TANK_GROUP)
+                        self._add_command_to_orders(action=ActionType.MOVE, x=0, y=-74, next_delay=300)
+                    if pos_unit['arrv'] == 7:
+                        self._add_command_to_orders(action=ActionType.CLEAR_AND_SELECT, right=self.world.width,
+                                                    bottom=self.world.height, group=ARRV_GROUP)
+                        self._add_command_to_orders(action=ActionType.MOVE, x=0, y=-74, next_delay=230)
+                    if pos_unit['ifv'] == 7:
+                        self._add_command_to_orders(action=ActionType.CLEAR_AND_SELECT, right=self.world.width,
+                                                    bottom=self.world.height, group=IFV_GROUP)
+                        self._add_command_to_orders(action=ActionType.MOVE, x=0, y=-74, next_delay=230)
                     if pos_unit['tank'] == 8:
                         self._add_command_to_orders(action=ActionType.CLEAR_AND_SELECT, right=self.world.width,
                                                     bottom=self.world.height, group=TANK_GROUP)
-                        self._add_command_to_orders(action=ActionType.MOVE, x=-74, y=0, next_delay=247)
-                        self._add_command_to_orders(action=ActionType.MOVE, x=0, y=-74, next_delay=247)
+                        self._add_command_to_orders(action=ActionType.MOVE, x=0, y=-74, next_delay=300)
                     if pos_unit['arrv'] == 8:
                         self._add_command_to_orders(action=ActionType.CLEAR_AND_SELECT, right=self.world.width,
                                                     bottom=self.world.height, group=ARRV_GROUP)
-                        self._add_command_to_orders(action=ActionType.MOVE, x=-74, y=0, next_delay=185)
-                        self._add_command_to_orders(action=ActionType.MOVE, x=0, y=-74, next_delay=185)
+                        self._add_command_to_orders(action=ActionType.MOVE, x=0, y=-74, next_delay=230)
                     if pos_unit['ifv'] == 8:
                         self._add_command_to_orders(action=ActionType.CLEAR_AND_SELECT, right=self.world.width,
                                                     bottom=self.world.height, group=IFV_GROUP)
-                        self._add_command_to_orders(action=ActionType.MOVE, x=-74, y=0, next_delay=185)
-                        self._add_command_to_orders(action=ActionType.MOVE, x=0, y=-74, next_delay=185)
-                elif 3 in pos_units_ground and 9 in pos_units_ground:
-                    if pos_unit['tank'] == 3:
-                        self._add_command_to_orders(action=ActionType.CLEAR_AND_SELECT, right=self.world.width,
-                                                    bottom=self.world.height, group=TANK_GROUP)
-                        self._add_command_to_orders(action=ActionType.MOVE, x=-148, y=0, next_delay=494)
-                        self._add_command_to_orders(action=ActionType.MOVE, x=0, y=74, next_delay=247)
-                    if pos_unit['arrv'] == 3:
-                        self._add_command_to_orders(action=ActionType.CLEAR_AND_SELECT, right=self.world.width,
-                                                    bottom=self.world.height, group=ARRV_GROUP)
-                        self._add_command_to_orders(action=ActionType.MOVE, x=-148, y=0, next_delay=370)
-                        self._add_command_to_orders(action=ActionType.MOVE, x=0, y=74, next_delay=185)
-                    if pos_unit['ifv'] == 3:
-                        self._add_command_to_orders(action=ActionType.CLEAR_AND_SELECT, right=self.world.width,
-                                                    bottom=self.world.height, group=IFV_GROUP)
-                        self._add_command_to_orders(action=ActionType.MOVE, x=-148, y=0, next_delay=370)
-                        self._add_command_to_orders(action=ActionType.MOVE, x=0, y=74, next_delay=185)
-                    if pos_unit['tank'] == 9:
-                        self._add_command_to_orders(action=ActionType.CLEAR_AND_SELECT, right=self.world.width,
-                                                    bottom=self.world.height, group=TANK_GROUP)
-                        self._add_command_to_orders(action=ActionType.MOVE, x=-74, y=0, next_delay=247)
-                        self._add_command_to_orders(action=ActionType.MOVE, x=0, y=-74, next_delay=247)
-                    if pos_unit['arrv'] == 9:
-                        self._add_command_to_orders(action=ActionType.CLEAR_AND_SELECT, right=self.world.width,
-                                                    bottom=self.world.height, group=ARRV_GROUP)
-                        self._add_command_to_orders(action=ActionType.MOVE, x=-74, y=0, next_delay=185)
-                        self._add_command_to_orders(action=ActionType.MOVE, x=0, y=-74, next_delay=185)
-                    if pos_unit['ifv'] == 9:
-                        self._add_command_to_orders(action=ActionType.CLEAR_AND_SELECT, right=self.world.width,
-                                                    bottom=self.world.height, group=IFV_GROUP)
-                        self._add_command_to_orders(action=ActionType.MOVE, x=-74, y=0, next_delay=185)
-                        self._add_command_to_orders(action=ActionType.MOVE, x=0, y=-74, next_delay=185)
-                elif 7 in pos_units_ground and 8 in pos_units_ground:
+                        self._add_command_to_orders(action=ActionType.MOVE, x=0, y=-74, next_delay=230)
+                elif 7 in pos_units_ground.values() and 9 in pos_units_ground.values():
+                    if DEBUG:
+                        print('7 in pos_units_ground and 9 in pos_units_ground')
                     if pos_unit['tank'] == 7:
                         self._add_command_to_orders(action=ActionType.CLEAR_AND_SELECT, right=self.world.width,
                                                     bottom=self.world.height, group=TANK_GROUP)
-                        self._add_command_to_orders(action=ActionType.MOVE, x=0, y=-74, next_delay=247)
+                        self._add_command_to_orders(action=ActionType.MOVE, x=0, y=-74, next_delay=300)
                     if pos_unit['arrv'] == 7:
                         self._add_command_to_orders(action=ActionType.CLEAR_AND_SELECT, right=self.world.width,
                                                     bottom=self.world.height, group=ARRV_GROUP)
-                        self._add_command_to_orders(action=ActionType.MOVE, x=0, y=-74, next_delay=185)
+                        self._add_command_to_orders(action=ActionType.MOVE, x=0, y=-74, next_delay=230)
                     if pos_unit['ifv'] == 7:
                         self._add_command_to_orders(action=ActionType.CLEAR_AND_SELECT, right=self.world.width,
                                                     bottom=self.world.height, group=IFV_GROUP)
-                        self._add_command_to_orders(action=ActionType.MOVE, x=0, y=-74, next_delay=185)
-                    if pos_unit['tank'] == 8:
-                        self._add_command_to_orders(action=ActionType.CLEAR_AND_SELECT, right=self.world.width,
-                                                    bottom=self.world.height, group=TANK_GROUP)
-                        self._add_command_to_orders(action=ActionType.MOVE, x=0, y=-74, next_delay=247)
-                    if pos_unit['arrv'] == 8:
-                        self._add_command_to_orders(action=ActionType.CLEAR_AND_SELECT, right=self.world.width,
-                                                    bottom=self.world.height, group=ARRV_GROUP)
-                        self._add_command_to_orders(action=ActionType.MOVE, x=0, y=-74, next_delay=185)
-                    if pos_unit['ifv'] == 8:
-                        self._add_command_to_orders(action=ActionType.CLEAR_AND_SELECT, right=self.world.width,
-                                                    bottom=self.world.height, group=IFV_GROUP)
-                        self._add_command_to_orders(action=ActionType.MOVE, x=0, y=-74, next_delay=185)
-                elif 7 in pos_units_ground and 9 in pos_units_ground:
-                    if pos_unit['tank'] == 7:
-                        self._add_command_to_orders(action=ActionType.CLEAR_AND_SELECT, right=self.world.width,
-                                                    bottom=self.world.height, group=TANK_GROUP)
-                        self._add_command_to_orders(action=ActionType.MOVE, x=0, y=-74, next_delay=247)
-                    if pos_unit['arrv'] == 7:
-                        self._add_command_to_orders(action=ActionType.CLEAR_AND_SELECT, right=self.world.width,
-                                                    bottom=self.world.height, group=ARRV_GROUP)
-                        self._add_command_to_orders(action=ActionType.MOVE, x=0, y=-74, next_delay=185)
-                    if pos_unit['ifv'] == 7:
-                        self._add_command_to_orders(action=ActionType.CLEAR_AND_SELECT, right=self.world.width,
-                                                    bottom=self.world.height, group=IFV_GROUP)
-                        self._add_command_to_orders(action=ActionType.MOVE, x=0, y=-74, next_delay=185)
+                        self._add_command_to_orders(action=ActionType.MOVE, x=0, y=-74, next_delay=230)
                     if pos_unit['tank'] == 9:
                         self._add_command_to_orders(action=ActionType.CLEAR_AND_SELECT, right=self.world.width,
                                                     bottom=self.world.height, group=TANK_GROUP)
-                        self._add_command_to_orders(action=ActionType.MOVE, x=-74, y=0, next_delay=247)
-                        self._add_command_to_orders(action=ActionType.MOVE, x=0, y=-74, next_delay=247)
+                        self._add_command_to_orders(action=ActionType.MOVE, x=-74, y=0, next_delay=300)
+                        self._add_command_to_orders(action=ActionType.MOVE, x=0, y=-74, next_delay=300)
                     if pos_unit['arrv'] == 9:
                         self._add_command_to_orders(action=ActionType.CLEAR_AND_SELECT, right=self.world.width,
                                                     bottom=self.world.height, group=ARRV_GROUP)
-                        self._add_command_to_orders(action=ActionType.MOVE, x=-74, y=0, next_delay=185)
-                        self._add_command_to_orders(action=ActionType.MOVE, x=0, y=-74, next_delay=185)
+                        self._add_command_to_orders(action=ActionType.MOVE, x=-74, y=0, next_delay=230)
+                        self._add_command_to_orders(action=ActionType.MOVE, x=0, y=-74, next_delay=230)
                     if pos_unit['ifv'] == 9:
                         self._add_command_to_orders(action=ActionType.CLEAR_AND_SELECT, right=self.world.width,
                                                     bottom=self.world.height, group=IFV_GROUP)
-                        self._add_command_to_orders(action=ActionType.MOVE, x=-74, y=0, next_delay=185)
-                        self._add_command_to_orders(action=ActionType.MOVE, x=0, y=-74, next_delay=185)
-                elif 8 in pos_units_ground and 9 in pos_units_ground:
+                        self._add_command_to_orders(action=ActionType.MOVE, x=-74, y=0, next_delay=230)
+                        self._add_command_to_orders(action=ActionType.MOVE, x=0, y=-74, next_delay=230)
+                elif 8 in pos_units_ground.values() and 9 in pos_units_ground.values():
+                    if DEBUG:
+                        print('8 in pos_units_ground and 9 in pos_units_ground')
                     if pos_unit['tank'] == 6:
                         self._add_command_to_orders(action=ActionType.CLEAR_AND_SELECT, right=self.world.width,
                                                     bottom=self.world.height, group=IFV_GROUP)
@@ -1871,18 +2334,28 @@ class TShirtBot:
                                                     bottom=self.world.height, group=TANK_GROUP)
                         self._add_command_to_orders(action=ActionType.ADD_TO_SELECTION, right=self.world.width,
                                                     bottom=self.world.height, group=ARRV_GROUP)
-                    self._add_command_to_orders(action=ActionType.MOVE, x=-74, y=0, next_delay=247)
-                    self._add_command_to_orders(action=ActionType.MOVE, x=0, y=-74, next_delay=247)
+                    self._add_command_to_orders(action=ActionType.MOVE, x=-74, y=0, next_delay=300)
+                    self._add_command_to_orders(action=ActionType.MOVE, x=0, y=-74, next_delay=300)
 
-        """ fly units regroup """
-        pass
+        """ move all units in geometry """
+        self._add_command_to_orders(action=ActionType.CLEAR_AND_SELECT, left=0, top=0, right=1024, bottom=96)
+        self._add_command_to_orders(action=ActionType.MOVE, x=0, y=-75, next_delay=24)
+        self._add_command_to_orders(action=ActionType.CLEAR_AND_SELECT, left=0, top=99, right=1024, bottom=100)
+        self._add_command_to_orders(action=ActionType.MOVE, x=0, y=-60, next_delay=24)
+        self._add_command_to_orders(action=ActionType.CLEAR_AND_SELECT, left=0, top=99, right=1024, bottom=104)
+        self._add_command_to_orders(action=ActionType.MOVE, x=0, y=-45, next_delay=24)
+        self._add_command_to_orders(action=ActionType.CLEAR_AND_SELECT, left=0, top=90, right=1024, bottom=108)
+        self._add_command_to_orders(action=ActionType.MOVE, x=0, y=-30, next_delay=24)
+        self._add_command_to_orders(action=ActionType.CLEAR_AND_SELECT, left=0, top=90, right=1024, bottom=112)
+        self._add_command_to_orders(action=ActionType.MOVE, x=0, y=-15, next_delay=24)
 
     def state_whirlwind(self):
         if len(self.orders) == 0:
-            self._add_command_to_orders(action=ActionType.CLEAR_AND_SELECT, group=WHIRLWIND_GROUP)
-            self._add_command_to_orders(action=ActionType.ROTATE, angle=1, next_delay=60)
-            self._add_command_to_orders(action=ActionType.SCALE, factor=0.1, next_delay=60)
-            self._add_command_to_orders(action=ActionType.MOVE, max_speed=0.3, next_delay=40)
+            pass
+            # self._add_command_to_orders(action=ActionType.CLEAR_AND_SELECT, group=WHIRLWIND_GROUP)
+            # self._add_command_to_orders(action=ActionType.ROTATE, angle=1, next_delay=60)
+            # self._add_command_to_orders(action=ActionType.SCALE, factor=0.1, next_delay=60)
+            # self._add_command_to_orders(action=ActionType.MOVE, max_speed=0.3, next_delay=40)
 
     def big_boom(self):
         self.current_order_wait = 0
@@ -1942,7 +2415,7 @@ class TShirtBot:
         temp_command.max_speed = max_speed
         temp_command.vehicle_id = vehicle_id
         temp_command.group = group
-        if vehicle_type:
+        if vehicle_type is not None:
             temp_command.vehicle_type = vehicle_type
 
         if not priority:
@@ -2032,8 +2505,7 @@ class MyStrategy:
         if bot_answer:
             self.commands_executed += 1
             if DEBUG:
-                print('[EXECUTE: T%s: EXE:%s STATE:%s] %s' % (world.tick_index, self.commands_executed,
-                                                              self.my_bot.state, ACTIONS[bot_answer.action]))
+                print('[EXECUTE: T%s: EXE:%s STATE:%s] %s %s' % (world.tick_index, self.commands_executed, self.my_bot.state, ACTIONS[bot_answer.action], bot_answer.group))
             move.action = bot_answer.action
             move.right = bot_answer.right
             move.bottom = bot_answer.bottom
