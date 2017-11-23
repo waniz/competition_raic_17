@@ -104,8 +104,10 @@ class TShirtBot:
 
         if self.me.remaining_action_cooldown_ticks > 0:
             self.state = 'no_action_points'
-        if not self.whirlwind_packed:
+        elif not self.whirlwind_packed:
             self.state = 'init_regroup'
+        elif self._nuclear_defence():
+            self.state = 'nuclear_defence'
         elif self._nuclear_check() and self.world.tick_index > 100:
             self.state = 'nuclear_attack'
         elif self.whirlwind_packed:
@@ -120,6 +122,8 @@ class TShirtBot:
             self.state_whirlwind()
         if self.state == 'nuclear_attack':
             self.big_boom()
+        if self.state == 'nuclear_defence':
+            self.state_defence()
         if self.state is None or self.state == '':
             pass
         return self._execute_command_in_order()
@@ -2384,22 +2388,24 @@ class TShirtBot:
 
     def big_boom(self):
         self.current_order_wait = 0
-        # self._add_command_to_orders(action=ActionType.TACTICAL_NUCLEAR_STRIKE, x=self.nuclear_x, y=self.nuclear_y,
-        #                             vehicle_id=self.vehicle_id_nuclear, priority=True)
         if DEBUG:
             print('NUCLEAR TEST:')
             print(self.nuclear_x, self.nuclear_y, self.vehicle_id_nuclear)
             print(self.my_vehicles[self.vehicle_id_nuclear].x, self.my_vehicles[self.vehicle_id_nuclear].y)
             print(self.enemy_center)
-        self._add_command_to_orders(action=ActionType.TACTICAL_NUCLEAR_STRIKE,
-                                    x=self.nuclear_x,
-                                    y=self.nuclear_y,
+        self._add_command_to_orders(action=ActionType.TACTICAL_NUCLEAR_STRIKE, x=self.nuclear_x, y=self.nuclear_y,
                                     vehicle_id=self.vehicle_id_nuclear, priority=True)
-        # print(list(self.my_vehicles.keys())[0])
-        # self._add_command_to_orders(action=ActionType.TACTICAL_NUCLEAR_STRIKE,
-        #                             x=self.my_vehicles[list(self.my_vehicles.keys())[0]].x + 20,
-        #                             y=self.my_vehicles[list(self.my_vehicles.keys())[0]].y + 20,
-        #                             vehicle_id=list(self.my_vehicles.keys())[0], priority=True)
+
+    def state_defence(self):
+        attack_x = self.me.next_nuclear_strike_x
+        attack_y = self.me.next_nuclear_strike_y
+        ticks_before = self.me.next_nuclear_strike_tick_index
+
+        self.current_order_wait = 0
+        self._add_command_to_orders(action=ActionType.CLEAR_AND_SELECT, right=self.world.width,
+                                    bottom=self.world.height, priority=True)
+        self._add_command_to_orders(action=ActionType.SCALE, x=attack_x, y=attack_y,
+                                    factor=10, priority=True, next_delay=ticks_before)
 
     def no_action(self):
         self.move.action = None
@@ -2531,6 +2537,13 @@ class TShirtBot:
         if best_id == -1:
             return best_id, math.sqrt(min_distance), 0
         return best_id, math.sqrt(min_distance), self.my_initial_vehicles[best_id].vision_range
+
+    def _nuclear_defence(self):
+        if self.me.next_nuclear_strike_tick_index == -1:
+            return False
+        if self.me.next_nuclear_strike_vehicle_id in self.my_vehicles.keys():
+            return False
+        return True
 
 
 class MyStrategy:
