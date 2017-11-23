@@ -106,8 +106,8 @@ class TShirtBot:
             self.state = 'no_action_points'
         elif not self.whirlwind_packed:
             self.state = 'init_regroup'
-        elif self._nuclear_defence():
-            self.state = 'nuclear_defence'
+        # elif self._nuclear_defence():
+        #     self.state = 'nuclear_defence'
         elif self._nuclear_check() and self.world.tick_index > 100:
             self.state = 'nuclear_attack'
         elif self.whirlwind_packed:
@@ -122,8 +122,8 @@ class TShirtBot:
             self.state_whirlwind()
         if self.state == 'nuclear_attack':
             self.big_boom()
-        if self.state == 'nuclear_defence':
-            self.state_defence()
+        # if self.state == 'nuclear_defence':
+        #     self.state_defence()
         if self.state is None or self.state == '':
             pass
         return self._execute_command_in_order()
