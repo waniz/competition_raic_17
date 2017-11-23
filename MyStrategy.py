@@ -17,7 +17,7 @@ from model.WeatherType import WeatherType
 from model.World import World
 
 
-DEBUG = True
+DEBUG = False
 
 BOMBER_GROUP = 9
 WHIRLWIND_GROUP = 1
@@ -2508,7 +2508,6 @@ class TShirtBot:
                 self.nuclear_x = self.my_vehicles[vehicle_id].x + (self.enemy_center[0] - self.my_vehicles[vehicle_id].x) / delta
                 self.nuclear_y = self.my_vehicles[vehicle_id].y + (self.enemy_center[1] - self.my_vehicles[vehicle_id].y) / delta
                 self.vehicle_id_nuclear = vehicle_id
-
                 return True
         return False
 
@@ -2529,6 +2528,8 @@ class TShirtBot:
         if best_id_flight > 0:
             if min_distance_flight < min_distance + 40:
                 return best_id_flight, math.sqrt(min_distance_flight), self.my_initial_vehicles[best_id].vision_range
+        if best_id == -1:
+            return best_id, math.sqrt(min_distance), 0
         return best_id, math.sqrt(min_distance), self.my_initial_vehicles[best_id].vision_range
 
 
