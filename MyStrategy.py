@@ -2493,18 +2493,18 @@ class TShirtBot:
             vehicle_id, min_distance, vision = self._get_closest_to_enemy_vehicle()
             if vehicle_id == -1:
                 return False
-            if min_distance < 20:
+            if min_distance < 10:
                 return False
-            if min_distance < vision - 10:
+            if min_distance < vision - 15:
                 if DEBUG:
                     print('NUCLEAR 1', vehicle_id, min_distance, vision)
                 self.nuclear_x = self.enemy_center[0]
                 self.nuclear_y = self.enemy_center[1]
                 self.vehicle_id_nuclear = vehicle_id
-            elif min_distance <= vision + 50:
+            elif min_distance <= vision + 30:
                 if DEBUG:
                     print('NUCLEAR 2', vehicle_id, min_distance, vision)
-                delta = min_distance / (vision - 20)
+                delta = min_distance / vision
                 self.nuclear_x = self.my_vehicles[vehicle_id].x + (self.enemy_center[0] - self.my_vehicles[vehicle_id].x) / delta
                 self.nuclear_y = self.my_vehicles[vehicle_id].y + (self.enemy_center[1] - self.my_vehicles[vehicle_id].y) / delta
                 self.vehicle_id_nuclear = vehicle_id
