@@ -122,16 +122,16 @@ class TShirtBot:
             self.state = 'init_regroup'
         # elif self._nuclear_check():
         #     self.state = 'AB'
-        # elif self.whirlwind_packed:
-        #     self.state = 'whirlwind'
+        elif self.whirlwind_packed:
+            self.state = 'whirlwind'
 
     def make_decision(self):
         if self.state == 'no_action_points':
             self.no_action()
         if self.state == 'init_regroup':
             self.state_regroup()
-        # if self.state == 'whirlwind':
-        #     self.state_whirlwind()
+        if self.state == 'whirlwind':
+            self.state_whirlwind()
         # if self.state == 'AB':
         #     self.big_boom()
         if self.state is None or self.state == '':
@@ -894,7 +894,7 @@ class TShirtBot:
                         self._add_command_to_orders(action=ActionType.MOVE, x=0, y=-74, next_delay=230)
                     occupyed_places.append(5)
                 else:
-                    if 4 not in occupyed_places:
+                    if 4 not in occupyed_places and 7 not in vehicle_places:
                         if group_inside == 'tank':
                             self._add_command_to_orders(action=ActionType.CLEAR_AND_SELECT, right=self.world.width,
                                                         bottom=self.world.height, group=TANK_GROUP)
@@ -909,6 +909,23 @@ class TShirtBot:
                             self._add_command_to_orders(action=ActionType.CLEAR_AND_SELECT, right=self.world.width,
                                                         bottom=self.world.height, group=IFV_GROUP)
                             self._add_command_to_orders(action=ActionType.MOVE, x=-74, y=0, next_delay=230)
+                            self._add_command_to_orders(action=ActionType.MOVE, x=0, y=-74, next_delay=230)
+                        occupyed_places.append(5)
+                    elif 4 not in occupyed_places and 9 not in vehicle_places:
+                        if group_inside == 'tank':
+                            self._add_command_to_orders(action=ActionType.CLEAR_AND_SELECT, right=self.world.width,
+                                                        bottom=self.world.height, group=TANK_GROUP)
+                            self._add_command_to_orders(action=ActionType.MOVE, x=74, y=0, next_delay=300)
+                            self._add_command_to_orders(action=ActionType.MOVE, x=0, y=-74, next_delay=300)
+                        if group_inside == 'arrv':
+                            self._add_command_to_orders(action=ActionType.CLEAR_AND_SELECT, right=self.world.width,
+                                                        bottom=self.world.height, group=ARRV_GROUP)
+                            self._add_command_to_orders(action=ActionType.MOVE, x=74, y=0, next_delay=230)
+                            self._add_command_to_orders(action=ActionType.MOVE, x=0, y=-74, next_delay=230)
+                        if group_inside == 'ifv':
+                            self._add_command_to_orders(action=ActionType.CLEAR_AND_SELECT, right=self.world.width,
+                                                        bottom=self.world.height, group=IFV_GROUP)
+                            self._add_command_to_orders(action=ActionType.MOVE, x=74, y=0, next_delay=230)
                             self._add_command_to_orders(action=ActionType.MOVE, x=0, y=-74, next_delay=230)
                         occupyed_places.append(5)
                     elif 6 not in occupyed_places:
@@ -970,17 +987,17 @@ class TShirtBot:
                     if group_inside == 'tank':
                         self._add_command_to_orders(action=ActionType.CLEAR_AND_SELECT, right=self.world.width,
                                                     bottom=self.world.height, group=TANK_GROUP)
-                        self._add_command_to_orders(action=ActionType.MOVE, x=148, y=0, next_delay=550)
-                        self._add_command_to_orders(action=ActionType.MOVE, x=0, y=-74, next_delay=300)
+                        self._add_command_to_orders(action=ActionType.MOVE, x=148, y=0, next_delay=600)
+                        self._add_command_to_orders(action=ActionType.MOVE, x=0, y=-74, next_delay=310)
                     if group_inside == 'arrv':
                         self._add_command_to_orders(action=ActionType.CLEAR_AND_SELECT, right=self.world.width,
                                                     bottom=self.world.height, group=ARRV_GROUP)
-                        self._add_command_to_orders(action=ActionType.MOVE, x=148, y=0, next_delay=450)
+                        self._add_command_to_orders(action=ActionType.MOVE, x=148, y=0, next_delay=480)
                         self._add_command_to_orders(action=ActionType.MOVE, x=0, y=-74, next_delay=230)
                     if group_inside == 'ifv':
                         self._add_command_to_orders(action=ActionType.CLEAR_AND_SELECT, right=self.world.width,
                                                     bottom=self.world.height, group=IFV_GROUP)
-                        self._add_command_to_orders(action=ActionType.MOVE, x=148, y=0, next_delay=450)
+                        self._add_command_to_orders(action=ActionType.MOVE, x=148, y=0, next_delay=480)
                         self._add_command_to_orders(action=ActionType.MOVE, x=0, y=-74, next_delay=230)
                     occupyed_places.append(6)
             if 9 in vehicle_places:
@@ -1025,17 +1042,17 @@ class TShirtBot:
                     if group_inside == 'tank':
                         self._add_command_to_orders(action=ActionType.CLEAR_AND_SELECT, right=self.world.width,
                                                     bottom=self.world.height, group=TANK_GROUP)
-                        self._add_command_to_orders(action=ActionType.MOVE, x=-148, y=0, next_delay=550)
+                        self._add_command_to_orders(action=ActionType.MOVE, x=-148, y=0, next_delay=600)
                         self._add_command_to_orders(action=ActionType.MOVE, x=0, y=-74, next_delay=300)
                     if group_inside == 'arrv':
                         self._add_command_to_orders(action=ActionType.CLEAR_AND_SELECT, right=self.world.width,
                                                     bottom=self.world.height, group=ARRV_GROUP)
-                        self._add_command_to_orders(action=ActionType.MOVE, x=-148, y=0, next_delay=450)
+                        self._add_command_to_orders(action=ActionType.MOVE, x=-148, y=0, next_delay=480)
                         self._add_command_to_orders(action=ActionType.MOVE, x=0, y=-74, next_delay=230)
                     if group_inside == 'ifv':
                         self._add_command_to_orders(action=ActionType.CLEAR_AND_SELECT, right=self.world.width,
                                                     bottom=self.world.height, group=IFV_GROUP)
-                        self._add_command_to_orders(action=ActionType.MOVE, x=-148, y=0, next_delay=450)
+                        self._add_command_to_orders(action=ActionType.MOVE, x=-148, y=0, next_delay=480)
                         self._add_command_to_orders(action=ActionType.MOVE, x=0, y=-74, next_delay=230)
                     occupyed_places.append(6)
 
@@ -1884,17 +1901,17 @@ class TShirtBot:
                 elif 8 in pos_units_ground.values() and 9 in pos_units_ground.values():
                     if DEBUG:
                         print('8 in pos_units_ground and 9 in pos_units_ground')
-                    if pos_unit['tank'] == 7:
+                    if pos_unit['tank'] == 8:
                         self._add_command_to_orders(action=ActionType.CLEAR_AND_SELECT, right=self.world.width,
                                                     bottom=self.world.height, group=TANK_GROUP)
                         self._add_command_to_orders(action=ActionType.MOVE, x=-74, y=0, next_delay=300)
                         self._add_command_to_orders(action=ActionType.MOVE, x=0, y=-74, next_delay=300)
-                    if pos_unit['arrv'] == 7:
+                    if pos_unit['arrv'] == 8:
                         self._add_command_to_orders(action=ActionType.CLEAR_AND_SELECT, right=self.world.width,
                                                     bottom=self.world.height, group=ARRV_GROUP)
                         self._add_command_to_orders(action=ActionType.MOVE, x=-74, y=0, next_delay=230)
                         self._add_command_to_orders(action=ActionType.MOVE, x=0, y=-74, next_delay=230)
-                    if pos_unit['ifv'] == 7:
+                    if pos_unit['ifv'] == 8:
                         self._add_command_to_orders(action=ActionType.CLEAR_AND_SELECT, right=self.world.width,
                                                     bottom=self.world.height, group=IFV_GROUP)
                         self._add_command_to_orders(action=ActionType.MOVE, x=-74, y=0, next_delay=230)
@@ -2338,24 +2355,53 @@ class TShirtBot:
                     self._add_command_to_orders(action=ActionType.MOVE, x=0, y=-74, next_delay=300)
 
         """ move all units in geometry """
+        self._add_command_to_orders(action=ActionType.CLEAR_AND_SELECT, left=0, top=0, right=1024, bottom=96, next_delay=50)
+
         self._add_command_to_orders(action=ActionType.CLEAR_AND_SELECT, left=0, top=0, right=1024, bottom=96)
-        self._add_command_to_orders(action=ActionType.MOVE, x=0, y=-75, next_delay=24)
-        self._add_command_to_orders(action=ActionType.CLEAR_AND_SELECT, left=0, top=99, right=1024, bottom=100)
-        self._add_command_to_orders(action=ActionType.MOVE, x=0, y=-60, next_delay=24)
-        self._add_command_to_orders(action=ActionType.CLEAR_AND_SELECT, left=0, top=99, right=1024, bottom=104)
-        self._add_command_to_orders(action=ActionType.MOVE, x=0, y=-45, next_delay=24)
-        self._add_command_to_orders(action=ActionType.CLEAR_AND_SELECT, left=0, top=90, right=1024, bottom=108)
-        self._add_command_to_orders(action=ActionType.MOVE, x=0, y=-30, next_delay=24)
-        self._add_command_to_orders(action=ActionType.CLEAR_AND_SELECT, left=0, top=90, right=1024, bottom=112)
-        self._add_command_to_orders(action=ActionType.MOVE, x=0, y=-15, next_delay=24)
+        self._add_command_to_orders(action=ActionType.MOVE, x=0, y=-68, next_delay=16)
+        self._add_command_to_orders(action=ActionType.CLEAR_AND_SELECT, left=0, top=98, right=1024, bottom=102)
+        self._add_command_to_orders(action=ActionType.MOVE, x=0, y=-54, next_delay=16)
+        self._add_command_to_orders(action=ActionType.CLEAR_AND_SELECT, left=0, top=102, right=1024, bottom=106)
+        self._add_command_to_orders(action=ActionType.MOVE, x=0, y=-40, next_delay=16)
+        self._add_command_to_orders(action=ActionType.CLEAR_AND_SELECT, left=0, top=106, right=1024, bottom=110)
+        self._add_command_to_orders(action=ActionType.MOVE, x=0, y=-28, next_delay=16)
+        self._add_command_to_orders(action=ActionType.CLEAR_AND_SELECT, left=0, top=110, right=1024, bottom=120)
+        self._add_command_to_orders(action=ActionType.MOVE, x=0, y=-14, next_delay=16)
+
+        self._add_command_to_orders(action=ActionType.CLEAR_AND_SELECT, left=0, top=144, right=1024, bottom=146)
+        self._add_command_to_orders(action=ActionType.MOVE, x=0, y=54, next_delay=16)
+        self._add_command_to_orders(action=ActionType.CLEAR_AND_SELECT, left=0, top=138, right=1024, bottom=143)
+        self._add_command_to_orders(action=ActionType.MOVE, x=0, y=40, next_delay=16)
+        self._add_command_to_orders(action=ActionType.CLEAR_AND_SELECT, left=0, top=132, right=1024, bottom=137)
+        self._add_command_to_orders(action=ActionType.MOVE, x=0, y=28, next_delay=16)
+        self._add_command_to_orders(action=ActionType.CLEAR_AND_SELECT, left=0, top=126, right=1024, bottom=131)
+        self._add_command_to_orders(action=ActionType.MOVE, x=0, y=14, next_delay=150)
+
+        self._add_command_to_orders(action=ActionType.CLEAR_AND_SELECT, left=0, top=0, right=72, bottom=1024)
+        self._add_command_to_orders(action=ActionType.MOVE, x=0, y=-5, next_delay=32)
+        self._add_command_to_orders(action=ActionType.CLEAR_AND_SELECT, left=150, top=0, right=1024, bottom=1024)
+        self._add_command_to_orders(action=ActionType.MOVE, x=0, y=5, next_delay=32)
+        self._add_command_to_orders(action=ActionType.CLEAR_AND_SELECT, left=0, top=0, right=72, bottom=1024)
+        self._add_command_to_orders(action=ActionType.MOVE, x=74, y=0, next_delay=10)
+        self._add_command_to_orders(action=ActionType.CLEAR_AND_SELECT, left=150, top=0, right=1024, bottom=1024)
+        self._add_command_to_orders(action=ActionType.MOVE, x=-74, y=0, next_delay=300)
+
+        self._add_command_to_orders(action=ActionType.CLEAR_AND_SELECT, left=0, top=0, right=1024, bottom=1024)
+        self._add_command_to_orders(action=ActionType.SCALE, x=119, y=119, factor=0.2, next_delay=120)
+        self._add_command_to_orders(action=ActionType.ROTATE, x=119, y=119, angle=0.9, next_delay=200)
 
     def state_whirlwind(self):
         if len(self.orders) == 0:
-            pass
-            # self._add_command_to_orders(action=ActionType.CLEAR_AND_SELECT, group=WHIRLWIND_GROUP)
-            # self._add_command_to_orders(action=ActionType.ROTATE, angle=1, next_delay=60)
-            # self._add_command_to_orders(action=ActionType.SCALE, factor=0.1, next_delay=60)
-            # self._add_command_to_orders(action=ActionType.MOVE, max_speed=0.3, next_delay=40)
+            self._add_command_to_orders(action=ActionType.CLEAR_AND_SELECT, right=1024, bottom=1024)
+
+            self.my_center = [np.mean([vehicle.x for vehicle in self.my_vehicles.values()]),
+                              np.mean([vehicle.y for vehicle in self.my_vehicles.values()])]
+            if DEBUG:
+                print(self.my_center)
+
+            # self._add_command_to_orders(action=ActionType.SCALE, factor=0.1, next_delay=20,
+            #                             x=self.my_center[0], y=self.my_center[1])
+            self._add_command_to_orders(action=ActionType.MOVE, max_speed=0.2, next_delay=60)
 
     def big_boom(self):
         self.current_order_wait = 0
