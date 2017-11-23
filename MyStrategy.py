@@ -16,8 +16,10 @@ from model.VehicleUpdate import VehicleUpdate
 from model.WeatherType import WeatherType
 from model.World import World
 
+import time
 
-DEBUG = True
+
+DEBUG = False
 
 BOMBER_GROUP = 9
 WHIRLWIND_GROUP = 1
@@ -42,21 +44,6 @@ ACTIONS = {
     10: 'SETUP_VEHICLE_PRODUCTION',
     11: 'TACTICAL_NUCLEAR_STRIKE'
 }
-
-
-class NuclearFighter:
-    """
-        Potential field nuclear bomber
-    """
-
-    def __init__(self, group_id, world, game, move, me):
-        self.world = world
-        self.game = game
-        self.move = move
-        self.me = me
-        self.group_id = group_id
-
-        self.state = ''
 
 
 class TShirtBot:
@@ -112,7 +99,29 @@ class TShirtBot:
         self.me = me
 
         self._update_vehicles()
-        self.my_vehicles = copy.deepcopy(self.my_initial_vehicles)
+        if world.tick_index == 0:
+            self.my_vehicles = self.my_initial_vehicles.copy()
+
+        # start = time.time()
+        # self._update_vehicles()
+        # finish_update = time.time() - start
+        #
+        # start = time.time()
+        # self.my_vehicles = copy.deepcopy(self.my_initial_vehicles)
+        # finish_vehicles = time.time() - start
+        #
+        # start = time.time()
+        # self.my_vehicles = self.my_initial_vehicles.copy()
+        # finish_vehicles_copy = time.time() - start
+        # if DEBUG:
+        #     print('update_vehicles:: %s' % finish_update)
+        #     print('copy_vehicles:: %s' % finish_vehicles)
+        #     print('copy_default vehicles:: %s' % finish_vehicles_copy)
+        #
+        if DEBUG:
+            self.my_center = [np.mean([vehicle.x for vehicle in self.my_vehicles.values()]),
+                              np.mean([vehicle.y for vehicle in self.my_vehicles.values()])]
+            print(self.my_center)
 
         self.state = ''
 
@@ -2393,14 +2402,7 @@ class TShirtBot:
     def state_whirlwind(self):
         if len(self.orders) == 0:
             self._add_command_to_orders(action=ActionType.CLEAR_AND_SELECT, right=1024, bottom=1024)
-
-            self.my_center = [np.mean([vehicle.x for vehicle in self.my_vehicles.values()]),
-                              np.mean([vehicle.y for vehicle in self.my_vehicles.values()])]
-            if DEBUG:
-                print(self.my_center)
-
-            # self._add_command_to_orders(action=ActionType.SCALE, factor=0.1, next_delay=20,
-            #                             x=self.my_center[0], y=self.my_center[1])
+            self._add_command_to_orders(action=ActionType.SCALE, factor=0.1, next_delay=40)
             self._add_command_to_orders(action=ActionType.MOVE, max_speed=0.2, next_delay=60)
 
     def big_boom(self):

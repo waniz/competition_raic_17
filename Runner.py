@@ -35,10 +35,6 @@ class Runner:
                 move = Move()
                 strategy.move(player, player_context.world, game, move)
 
-                # if move.action:
-                #     print('[Tick %s] ACTION:%s, GROUP:%s TYPE:%s RIGHT:%s BOTTOM:%s X:%s Y:%s' % (
-                #         player_context.world.tick_index, move.action, move.group, move.vehicle_type, move.right, move.bottom, move.x, move.y))
-
                 self.remote_process_client.write_move_message(move)
         finally:
             self.remote_process_client.close()
