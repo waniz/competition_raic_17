@@ -16,10 +16,8 @@ from model.VehicleUpdate import VehicleUpdate
 from model.WeatherType import WeatherType
 from model.World import World
 
-import time
 
-
-DEBUG = False
+DEBUG = True
 
 BOMBER_GROUP = 9
 WHIRLWIND_GROUP = 1
@@ -102,47 +100,26 @@ class TShirtBot:
         if world.tick_index == 0:
             self.my_vehicles = self.my_initial_vehicles.copy()
 
-        # start = time.time()
-        # self._update_vehicles()
-        # finish_update = time.time() - start
-        #
-        # start = time.time()
-        # self.my_vehicles = copy.deepcopy(self.my_initial_vehicles)
-        # finish_vehicles = time.time() - start
-        #
-        # start = time.time()
-        # self.my_vehicles = self.my_initial_vehicles.copy()
-        # finish_vehicles_copy = time.time() - start
-        # if DEBUG:
-        #     print('update_vehicles:: %s' % finish_update)
-        #     print('copy_vehicles:: %s' % finish_vehicles)
-        #     print('copy_default vehicles:: %s' % finish_vehicles_copy)
-        #
-        if DEBUG:
-            self.my_center = [np.mean([vehicle.x for vehicle in self.my_vehicles.values()]),
-                              np.mean([vehicle.y for vehicle in self.my_vehicles.values()])]
-            print(self.my_center)
-
         self.state = ''
 
         if self.me.remaining_action_cooldown_ticks > 0:
             self.state = 'no_action_points'
         if not self.whirlwind_packed:
             self.state = 'init_regroup'
-        # elif self._nuclear_check():
-        #     self.state = 'AB'
+        elif self._nuclear_check() and self.world.tick_index > 100:
+            self.state = 'nuclear_attack'
         elif self.whirlwind_packed:
-            self.state = 'whirlwind'
+            self.state = 'sandwich'
 
     def make_decision(self):
         if self.state == 'no_action_points':
             self.no_action()
         if self.state == 'init_regroup':
             self.state_regroup()
-        if self.state == 'whirlwind':
+        if self.state == 'sandwich':
             self.state_whirlwind()
-        # if self.state == 'AB':
-        #     self.big_boom()
+        if self.state == 'nuclear_attack':
+            self.big_boom()
         if self.state is None or self.state == '':
             pass
         return self._execute_command_in_order()
@@ -2409,6 +2386,11 @@ class TShirtBot:
         self.current_order_wait = 0
         # self._add_command_to_orders(action=ActionType.TACTICAL_NUCLEAR_STRIKE, x=self.nuclear_x, y=self.nuclear_y,
         #                             vehicle_id=self.vehicle_id_nuclear, priority=True)
+        if DEBUG:
+            print('NUCLEAR TEST:')
+            print(self.nuclear_x, self.nuclear_y, self.vehicle_id_nuclear)
+            print(self.my_vehicles[self.vehicle_id_nuclear].x, self.my_vehicles[self.vehicle_id_nuclear].y)
+            print(self.enemy_center)
         self._add_command_to_orders(action=ActionType.TACTICAL_NUCLEAR_STRIKE,
                                     x=self.nuclear_x,
                                     y=self.nuclear_y,
@@ -2508,32 +2490,46 @@ class TShirtBot:
                                  np.mean([vehicle.y for vehicle in self.enemy_vehicles.values()])]
             self.my_center = [np.mean([vehicle.x for vehicle in self.my_vehicles.values()]),
                               np.mean([vehicle.y for vehicle in self.my_vehicles.values()])]
-            # distance = math.sqrt((self.my_center[0] - self.enemy_center[0]) ** 2 + (
-            #     self.my_center[1] - self.enemy_center[1]) ** 2)
-            vehicle_id, vision, min_distance, min_enemy_dist, min_enemy_id = self._get_closest_to_enemy_vehicle()
-            if min_enemy_dist <= 100:
-                self.nuclear_x = self.enemy_vehicles[min_enemy_id].x
-                self.nuclear_y = self.enemy_vehicles[min_enemy_id].y
-
+            vehicle_id, min_distance, vision = self._get_closest_to_enemy_vehicle()
+            if vehicle_id == -1:
+                return False
+            if min_distance < 20:
+                return False
+            if min_distance < vision - 10:
+                if DEBUG:
+                    print('NUCLEAR 1', vehicle_id, min_distance, vision)
+                self.nuclear_x = self.enemy_center[0]
+                self.nuclear_y = self.enemy_center[1]
                 self.vehicle_id_nuclear = vehicle_id
+            elif min_distance <= vision + 50:
+                if DEBUG:
+                    print('NUCLEAR 2', vehicle_id, min_distance, vision)
+                delta = min_distance / (vision - 20)
+                self.nuclear_x = self.my_vehicles[vehicle_id].x + (self.enemy_center[0] - self.my_vehicles[vehicle_id].x) / delta
+                self.nuclear_y = self.my_vehicles[vehicle_id].y + (self.enemy_center[1] - self.my_vehicles[vehicle_id].y) / delta
+                self.vehicle_id_nuclear = vehicle_id
+
                 return True
         return False
 
     def _get_closest_to_enemy_vehicle(self):
         min_distance, best_id = 100000000, -1
+        min_distance_flight, best_id_flight = 100000000, -1
         for vehicle in self.my_vehicles.values():
             distance = (vehicle.x - self.enemy_center[0]) ** 2 + (vehicle.y - self.enemy_center[1]) ** 2
-            if distance < min_distance:
-                min_distance = distance
-                best_id = vehicle.id
-        min_enemy_dist, min_enemy_id = 100000000, 1
-        for enemy in self.enemy_vehicles.values():
-            min_enemy = (enemy.x - self.my_vehicles[best_id].x) ** 2 + (enemy.y - self.my_vehicles[best_id].y) ** 2
-            if min_enemy < min_enemy_dist:
-                min_enemy_dist = min_enemy
-                min_enemy_id = enemy.id
-        return best_id, self.my_initial_vehicles[best_id].vision_range, math.sqrt(min_distance), \
-               math.sqrt(min_enemy_dist), min_enemy_id
+            if self.my_initial_vehicles[vehicle.id].type == VehicleType.FIGHTER:
+                if min_distance_flight > distance:
+                    min_distance_flight = distance
+                    best_id_flight = vehicle.id
+            else:
+                if min_distance > distance:
+                    min_distance = distance
+                    best_id = vehicle.id
+
+        if best_id_flight > 0:
+            if min_distance_flight < min_distance + 40:
+                return best_id_flight, math.sqrt(min_distance_flight), self.my_initial_vehicles[best_id].vision_range
+        return best_id, math.sqrt(min_distance), self.my_initial_vehicles[best_id].vision_range
 
 
 class MyStrategy:
@@ -2553,7 +2549,8 @@ class MyStrategy:
         if bot_answer:
             self.commands_executed += 1
             if DEBUG:
-                print('[EXECUTE: T%s: EXE:%s STATE:%s] %s %s' % (world.tick_index, self.commands_executed, self.my_bot.state, ACTIONS[bot_answer.action], bot_answer.group))
+                print('[EXECUTE: T%s: EXE:%s STATE:%s] %s %s %s' % (
+                    world.tick_index, self.commands_executed, self.my_bot.state, ACTIONS[bot_answer.action], bot_answer.group, bot_answer.vehicle_id))
             move.action = bot_answer.action
             move.right = bot_answer.right
             move.bottom = bot_answer.bottom
