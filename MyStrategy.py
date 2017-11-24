@@ -2507,7 +2507,7 @@ class TShirtBot:
                 self.nuclear_x = self.enemy_center[0]
                 self.nuclear_y = self.enemy_center[1]
                 self.vehicle_id_nuclear = vehicle_id
-            elif min_distance <= vision + 30:
+            elif min_distance <= vision + 10:
                 if DEBUG:
                     print('NUCLEAR 2', vehicle_id, min_distance, vision)
                 delta = min_distance / vision
