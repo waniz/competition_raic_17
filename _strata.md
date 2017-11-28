@@ -18,7 +18,7 @@ __MyStrategy ideal logic__
 
     2. NUCLEAR STRIKE:
         * attack
-            LVL 1 - avoid selfattack
+            LVL 1 - avoid self-attack
             LVL 2 - select correct xy in enemy group
             LVL 3 - intellectual attack to the enemy groups (back target)
             LVL 4 - limit attack if low amount of enemy units in the nuclear range
