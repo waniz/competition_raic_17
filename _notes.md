@@ -1,8 +1,3 @@
-UnitTypes:
-
-    TANK - танк;
-    IFV  - бмп;
-    HELI - ударный вертолет;
-    Fighter - истребитель;
-    ARRV - ремонтник.
+seed=45 - tank (2 in middle)
+seed=46 - 3 in corners
     

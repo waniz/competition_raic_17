@@ -39,7 +39,6 @@ __MyStrategy ideal logic__
         * army movement to the groups
         * rotate army
         * optimise formation build
-        * timer control
         * use much more actions and time.
 
     SET THE AIM ONLY ON R2 RULES, the sandbox doesn't matter.
